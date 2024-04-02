@@ -9,6 +9,7 @@ import {
   OneToMany,
   PrimaryColumn,
   type Relation,
+  VirtualColumn,
 } from 'typeorm';
 import { YalcUserPhoneEntity } from './user-phone.entity.js';
 
@@ -40,12 +41,7 @@ export class YalcUserEntity extends EntityWithTimestamps(BaseEntity) {
   })
   // virtual column, not selectable
   // handled by the @ModelField
-  // @Column({
-  //   select: false,
-  //   insert: false,
-  //   update: false,
-  //   type: 'varchar',
-  // })
+  @VirtualColumn({ query: () => '' })
   fullName!: string;
 
   @OneToMany(

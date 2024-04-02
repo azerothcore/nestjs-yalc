@@ -32,9 +32,9 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "typeRoots": [
-      "../../node_modules/@types",
-      "../../node_modules/@nestjs/swagger/node_modules/@types",
-      "../../types",
+      "node_modules/@types",
+      "node_modules/@nestjs/swagger/node_modules/@types",
+      "node_modules/@nestjs-yalc/types",
       "../../types-extends"
     ]
   },
