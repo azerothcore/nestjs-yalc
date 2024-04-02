@@ -34,7 +34,8 @@
     "typeRoots": [
       "node_modules/@types",
       "node_modules/@nestjs/swagger/node_modules/@types",
-      "node_modules/@nestjs-yalc/types"
+      "node_modules/@nestjs-yalc/types",
+      "node_modules/@nestjs-yalc/types-extends"
     ]
   },
   "ts-node": {
@@ -43,5 +44,5 @@
     "files": true,
     "esm": true,
     "swc": true
-  },
+  }
 }
