@@ -98,6 +98,9 @@ const httpStatusDescriptions: {
   //   '511: Client needs to authenticate for network access.',
 };
 
-export const getHttpStatusDescription = (status: HttpStatusCodes): string => {
-  return httpStatusDescriptions[status] ?? 'Unknown status code';
+export const getHttpStatusDescription = (
+  status: HttpStatusCodes,
+  fallbackDescription = 'Unknown status code',
+): string => {
+  return httpStatusDescriptions[status] ?? fallbackDescription;
 };

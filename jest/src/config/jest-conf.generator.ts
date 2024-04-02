@@ -199,7 +199,7 @@ export function jestConfGenerator(
         .flat()
         .filter((value) => {
           return selectedProj.some((projName) => {
-            return value.displayName.startsWith(`unit/${projName}`);
+            return value.displayName === `unit/${projName}`;
           });
         })
     : projectSets[selectedProj];

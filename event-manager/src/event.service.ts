@@ -53,6 +53,8 @@ export interface IEventServiceOptions<
 @Injectable()
 export class YalcEventService<
   TFormatter extends EventNameFormatter = EventNameFormatter,
+  TEventOptions extends IEventOptions<TFormatter> = IEventOptions<TFormatter>,
+  TErrorOptions extends IErrorEventOptions<TFormatter> = IErrorEventOptions<TFormatter>, 
 > {
   constructor(
     protected readonly loggerService: ImprovedLoggerService,
@@ -85,7 +87,7 @@ export class YalcEventService<
 
   public async logAsync(
     eventName: Parameters<TFormatter> | string,
-    options?: IEventOptions<TFormatter>,
+    options?: TEventOptions,
   ): Promise<any> {
     return eventLogAsync(eventName, this.buildOptions(options));
   }
@@ -102,49 +104,49 @@ export class YalcEventService<
 
   public async warnAsync(
     eventName: Parameters<TFormatter> | string,
-    options?: IEventOptions<TFormatter>,
+    options?: TEventOptions,
   ): Promise<any> {
     return eventWarnAsync(eventName, this.buildOptions(options));
   }
 
   public async debugAsync(
     eventName: Parameters<TFormatter> | string,
-    options?: IEventOptions<TFormatter>,
+    options?: TEventOptions,
   ): Promise<any> {
     return eventDebugAsync(eventName, this.buildOptions(options));
   }
 
   public async verboseAsync(
     eventName: Parameters<TFormatter> | string,
-    options?: IEventOptions<TFormatter>,
+    options?: TEventOptions,
   ): Promise<any> {
     return eventVerboseAsync(eventName, this.buildOptions(options));
   }
 
   public log(
     eventName: Parameters<TFormatter> | string,
-    options?: IEventOptions<TFormatter>,
+    options?: TEventOptions,
   ): any {
     return eventLog(eventName, this.buildOptions(options));
   }
 
   public warn(
     eventName: Parameters<TFormatter> | string,
-    options?: IEventOptions<TFormatter>,
+    options?: TEventOptions,
   ): any {
     return eventWarn(eventName, this.buildOptions(options));
   }
 
   public debug(
     eventName: Parameters<TFormatter> | string,
-    options?: IEventOptions<TFormatter>,
+    options?: TEventOptions,
   ): any {
     return eventDebug(eventName, this.buildOptions(options));
   }
 
   public verbose(
     eventName: Parameters<TFormatter> | string,
-    options?: IEventOptions<TFormatter>,
+    options?: TEventOptions,
   ): any {
     return eventVerbose(eventName, this.buildOptions(options));
   }
@@ -155,7 +157,7 @@ export class YalcEventService<
   public errorHttp(
     eventName: Parameters<TFormatter> | string,
     errorCode: number,
-    options?: IErrorEventOptions<TFormatter>,
+    options?: TErrorOptions,
   ): any {
     const httpCode: HttpStatusCodes = errorCode;
     const selectedError =
@@ -172,7 +174,7 @@ export class YalcEventService<
    */
   public errorBadRequest(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): BadRequestError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, BadRequestError)),
@@ -185,7 +187,7 @@ export class YalcEventService<
    */
   public errorUnauthorized(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): UnauthorizedError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, UnauthorizedError)),
@@ -198,7 +200,7 @@ export class YalcEventService<
    */
   public errorPaymentRequired(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): PaymentRequiredError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, PaymentRequiredError)),
@@ -211,7 +213,7 @@ export class YalcEventService<
    */
   public errorForbidden(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): ForbiddenError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, ForbiddenError)),
@@ -224,7 +226,7 @@ export class YalcEventService<
    */
   public errorNotFound(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): NotFoundError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, NotFoundError)),
@@ -237,7 +239,7 @@ export class YalcEventService<
    */
   public errorMethodNotAllowed(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): MethodNotAllowedError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, MethodNotAllowedError)),
@@ -250,7 +252,7 @@ export class YalcEventService<
    */
   public errorNotAcceptable(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): NotAcceptableError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, NotAcceptableError)),
@@ -263,7 +265,7 @@ export class YalcEventService<
    */
   public errorConflict(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): ConflictError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, ConflictError)),
@@ -276,7 +278,7 @@ export class YalcEventService<
    */
   public errorGone(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): GoneError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, GoneError)),
@@ -289,7 +291,7 @@ export class YalcEventService<
    */
   public errorUnsupportedMediaType(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): UnsupportedMediaTypeError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(
@@ -304,7 +306,7 @@ export class YalcEventService<
    */
   public errorUnprocessableEntity(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): UnprocessableEntityError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(
@@ -319,7 +321,7 @@ export class YalcEventService<
    */
   public errorTooManyRequests(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): TooManyRequestsError {
     const mergedOptions = this.applyLoggerLevelWarn(
       applyAwaitOption(this.buildErrorOptions(options, TooManyRequestsError)),
@@ -332,7 +334,7 @@ export class YalcEventService<
    */
   public errorInternalServerError(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): InternalServerError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, InternalServerError),
@@ -345,7 +347,7 @@ export class YalcEventService<
    */
   public errorNotImplemented(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): NotImplementedError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, NotImplementedError),
@@ -358,7 +360,7 @@ export class YalcEventService<
    */
   public errorBadGateway(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): BadGatewayError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, BadGatewayError),
@@ -371,7 +373,7 @@ export class YalcEventService<
    */
   public errorServiceUnavailable(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): ServiceUnavailableError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, ServiceUnavailableError),
@@ -384,7 +386,7 @@ export class YalcEventService<
    */
   public errorGatewayTimeout(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+    options?: Omit<TErrorOptions, 'errorClass'>,
   ): any {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, GatewayTimeoutError),
@@ -443,7 +445,7 @@ export class YalcEventService<
       errorOptions.errorClass ??= DefaultError;
     }
 
-    const res: IErrorEventOptions<TFormatter> = {
+    const res: IErrorEventOptions<TFormatter>  = {
       ..._options,
       event,
       logger:
@@ -459,7 +461,7 @@ export class YalcEventService<
   }
 
   protected buildErrorOptions<TErrorClass extends DefaultError = DefaultError>(
-    options: IErrorEventOptions<TFormatter> = {},
+    options: IErrorEventOptions<TFormatter>  = {},
     defaultClass: ClassType<TErrorClass> | boolean = true,
   ): IErrorEventOptionsRequired<TFormatter, TErrorClass> {
     options.errorClass ??= defaultClass;

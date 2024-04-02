@@ -34,6 +34,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { YalcClsModule } from './cls.module.js';
 import { IYalcControllerStaticInterface } from './yalc-controller.interface.js';
 import path from 'path';
+import _ from 'lodash';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -80,6 +81,36 @@ export function envFilePathList(dirname: string = '.') {
 
   return envFilePath;
 }
+
+const _buildEnvFilePath = _.memoize(
+  (envDir?: string, envPath?: string | string[]) => {
+    const envFilePath: string[] = [];
+
+    if (!envPath) {
+      Logger.debug(
+        `Loading env from: ${envDir}, NODE_ENV: ${process.env.NODE_ENV}`,
+      );
+
+      envFilePath.push(...envFilePathList(envDir));
+    } else {
+      envFilePath.push(...(Array.isArray(envPath) ? envPath : [envPath]));
+    }
+
+    Logger.debug(`Using env file paths: ${envFilePath}`);
+
+    return envFilePath;
+  },
+  // Since memoize use the first argument as the key, we need to generate a unique key based on both arguments
+  (envDir = '', envPath = '') => {
+    return `${envDir}-${Array.isArray(envPath) ? envPath.join(',') : envPath}`;
+  },
+);
+
+/**
+ * For some strange reason, the memoize doesn't work well with exporting the const at the same time
+ * and re-use it in the same file
+ */
+export const buildEnvFilePath = _buildEnvFilePath;
 
 /**
  * Used for applications with controller/resolver support
@@ -176,13 +207,60 @@ export function yalcBaseAppModuleMetadataFactory(
     }),
   ];
 
-  const envFilePath: string[] = [];
+    const envFilePath: string[] = _buildEnvFilePath(
+      options?.envDir,
+      options?.envPath,
+    );
 
-  if (!_options.envPath) {
-    envFilePath.push(...envFilePathList(_options.envDir));
-  } else {
-    envFilePath.push(..._options.envPath);
-  }
+    _imports.push(
+      EventModule.forRootAsync({
+        imports: [module],
+        loggerProvider: {
+          provide: 'INTERNAL_APP_LOGGER_SERVICE',
+          useExisting: getAppLoggerToken(appAlias),
+        },
+        eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
+        eventEmitter: {
+          global: true,
+          wildcard: true,
+          maxListeners: 1000,
+        },
+      }),
+      ConfigModule.forRoot({
+        envFilePath,
+        load: [
+          registerAs(appAlias, async () => {
+            /**
+             * @see https://docs.nestjs.com/techniques/configuration#environment-variables-loaded-hook
+             */
+            await ConfigModule.envVariablesLoaded;
+
+            return await (_options.configFactory?.() ?? {});
+          }),
+          ...(_options.extraConfigs ?? []),
+        ],
+        validationSchema: Joi.object({
+          NODE_ENV: Joi.string()
+            .valid(
+              NODE_ENV.DEVELOPMENT,
+              NODE_ENV.PRODUCTION,
+              NODE_ENV.TEST,
+              NODE_ENV.PIPELINE,
+            )
+            .default(NODE_ENV.DEVELOPMENT),
+        }),
+        validationOptions: {
+          allowUnknown: true,
+          abortEarly: true,
+        },
+        /**
+         * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
+         * It allows us to use the ConfigService in any module without having to import the ConfigModule
+         */
+        isGlobal: true,
+      }),
+      YalcClsModule,
+    );
 
   _imports.push(
     ConfigModule.forRoot({

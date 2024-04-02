@@ -32,6 +32,10 @@ export interface IDataInfo {
 
 export interface IEventPayload {
   message?: string;
+  /**
+   * The data is the place where you want to add the extra information 
+   * that are not returned back as a response but they can be sent to the logger or the event emitter.
+   */
   data?: IDataInfo;
   eventName: string;
   errorInfo?: IErrorPayload;
@@ -39,8 +43,18 @@ export interface IEventPayload {
 
 export interface IEventOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
-> {
+  > {
+  /**
+   * The data is the place where you want to add the extra information 
+   * that are not returned back as a response but they can be sent to the logger or the event emitter.
+   */
   data?: any;
+  /**
+   * This can be used to log the configuration values of the event.
+   * This might be helpful to filter the logs based on extra configuration values
+   * that are not the basic error level, statusCode etc.
+   */
+  config?: any;
   mask?: string[];
   event?: IEventEmitterOptions<TFormatter> | false;
   message?: string;
@@ -53,6 +67,11 @@ export interface IErrorEventOptions<
   TErrorClass extends DefaultError = DefaultError,
 > extends IEventOptions<TFormatter>,
     Omit<IErrorPayload, 'internalMessage' | 'data'> {
+  /**
+   * If set to false or undefined, the error will not be thrown.
+   * If set to true, the error will be thrown with the default error class.
+   * If set to a class, the error will be thrown with the provided class.
+   */
   errorClass?: ClassType<TErrorClass> | boolean;
 }
 
@@ -129,7 +148,7 @@ export function event<
   eventName: Parameters<TFormatter> | string,
   options?: TOption,
 ): Promise<ReturnType<TOption>> | ReturnType<TOption> {
-  let { data: receivedData, event, logger, mask, trace } = options ?? {};
+  let { data: receivedData, event, logger, mask, trace, config } = options ?? {};
 
   const formattedEventName = formatName(
     eventName,
@@ -153,17 +172,15 @@ export function event<
   let errorInstance;
   let errorPayload: ILogErrorPayload = {};
   if (isErrorOptions(options)) {
-    const error = options?.errorClass;
+    const { errorClass: _class, ...rest } = options;
 
-    if (error !== false && error !== undefined) {
-      let errorClass;
-      let errorOptions = {};
-      if (error === true) {
-        errorClass = DefaultError;
+    if (_class !== false && _class !== undefined) {
+      let _errorClass: ClassType<DefaultError>;
+      let errorOptions = rest;
+      if (_class === true) {
+        _errorClass = DefaultError;
       } else {
-        const { errorClass: _class, ...rest } = options;
-        errorOptions = rest;
-        errorClass = error;
+        _errorClass = _class;
       }
 
       /**
@@ -171,7 +188,7 @@ export function event<
        */
       const message = optionalMessage ?? formattedEventName;
 
-      errorInstance = new errorClass(message, {
+      errorInstance = new _errorClass(message, {
         data: receivedData,
         eventName: formattedEventName,
         ...errorOptions,
@@ -185,6 +202,7 @@ export function event<
         errorPayload = {
           ...(errorInstance as any),
           data: receivedData,
+          config
         };
       }
     }
@@ -211,12 +229,14 @@ export function event<
       instance.error(message, trace ?? errorPayload?.trace, {
         data: { ...data, ...errorPayload },
         event: false,
+        config,
         trace: trace ?? errorPayload?.trace,
       });
     } else {
       instance[level]?.(message, {
         data: { ...data, ...errorPayload },
         event: false,
+        config,
         trace: trace ?? errorPayload?.trace,
       });
     }

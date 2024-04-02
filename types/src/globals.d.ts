@@ -1,23 +1,10 @@
 /* eslint-disable no-var */
-import { LogLevel } from '@nestjs/common';
-import { MigrationInterface } from 'typeorm';
 
 declare global {
   var __JEST_DISABLE_DB: boolean;
-  var TypeORM_Seeding_Connection: any;
-  var TypeORM_Migration_classes:
-    | { [connName: string]: ClassType<MigrationInterface>[] | undefined }
-    | undefined;
-
   namespace NodeJS {
     interface ProcessEnv {
       NODE_ENV?: 'development' | 'production' | 'test' | 'pipeline';
-      NEST_LOGGER_LEVELS?: LogLevel | string;
-      TYPEORM_LOGGING?: 'true' | 'false';
-      /**
-       * Allow db connections without a schema
-       */
-      TYPEORM_NO_SEL_DB?: 'true' | 'false';
     }
   }
 }
@@ -33,8 +20,8 @@ export type InstanceType<T> = T extends new (...args: any[]) => infer R
   ? R
   : never;
 
-export declare type ClassType<Class = any> = {
-  new (...args: any[]): Class;
+export declare type ClassType<TClass = any, TArgs extends any[] = any[]> = {
+  new (...args: TArgs): TClass;
 };
 
 export declare type AnyFunction<A = any> = (...input: any[]) => A;
@@ -69,6 +56,20 @@ type Spread<L, R> = Id<
 >;
 
 type NotVoid<T extends Function> = (() => void) extends T ? never : T;
+
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+
+type XOR<T, Tcopy> = T extends object ? Without<Exclude<Tcopy, T>, T> & T : T;
+
+type CommonKeys<T, U> = {
+  [K in keyof T & keyof U]: T[K] extends U[K] ? K : never
+}[keyof T & keyof U];
+
+// This utility type creates a new type with only the common properties
+type Intersect<T, U> = Pick<T, CommonKeys<T, U>>;
+
+
+type ReturnOrFunctionReturnType<T> = T extends (...input: any[]) => infer R ? R : T;
 
 type HTTPMethods =
   | 'DELETE'

@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
-import { ICreateOptions } from './app-bootstrap.helper.js';
+import { INestCreateOptions } from './app-bootstrap.helper.js';
 
 export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationContext> {
   constructor(appAlias: string, module: any) {
@@ -13,7 +13,7 @@ export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationCon
   }
 
   async initApp(options?: {
-    createOptions?: ICreateOptions;
+    createOptions?: INestCreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.createApp({
@@ -34,7 +34,7 @@ export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationCon
   }
 
   async createApp(_options?: {
-    createOptions?: ICreateOptions;
+    createOptions?: INestCreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     let app: INestApplicationContext;

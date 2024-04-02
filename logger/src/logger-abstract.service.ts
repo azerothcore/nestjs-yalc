@@ -10,7 +10,17 @@ import {
 import { YalcGlobalClsService } from '../../app/src/cls.module.js';
 
 export interface LogMethodOptions {
+  /**
+   * The data is the place where you want to add the extra information 
+   * that are not returned back as a response but they can be sent to the logger or the event emitter.
+   */
   data?: any;
+  /**
+   * This can be used to log the configuration values of the event.
+   * This might be helpful to filter the logs based on extra configuration values
+   * that are not the basic error level, statusCode etc.
+   */
+  config?: any; 
   masks?: string[];
   context?: string;
   trace?: string;

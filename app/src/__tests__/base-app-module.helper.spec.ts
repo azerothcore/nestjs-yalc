@@ -191,14 +191,32 @@ describe('base-app', () => {
       expect(metadata.controllers).toEqual([]);
     });
 
-    it('should create base app module metadata with options and controllers', () => {
+    it('should create base app module metadata with options and controllers, with envPath as a string', () => {
       class TestController {}
 
       const metadata = yalcBaseAppModuleMetadataFactory(
         DummyStaticModule1,
         'appAlias',
         {
-          envPath: ['./.env.test'],
+          envPath: './.env.test',
+          extraConfigs: [],
+          providers: [],
+          imports: [],
+          exports: [],
+          controllers: [TestController],
+        },
+      );
+      expect(metadata).toBeDefined();
+      expect(metadata.controllers).toEqual([TestController]);
+    });
+
+    it('should create base app module metadata without envPath', () => {
+      class TestController {}
+
+      const metadata = yalcBaseAppModuleMetadataFactory(
+        DummyStaticModule1,
+        'appAlias',
+        {
           extraConfigs: [],
           providers: [],
           imports: [],

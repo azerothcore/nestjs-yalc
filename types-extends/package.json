@@ -1,5 +1,5 @@
 {
-  "name": "@nestjs-yalc/types",
+  "name": "@types/nestjs-yalc-extends",
   "type": "module",
   "types": "./src/index.d.ts",
   "files": [
@@ -8,11 +8,6 @@
     "./src/globals.enum.ts",
     "./src/modules.d.ts"
   ],
-  "custom": {
-    "nest": {
-      "type": "library"
-    }
-  },
   "exports": {
     ".": "./src/index.d.ts",
     "./*.d.js": "./src/*.d.ts",
@@ -20,6 +15,6 @@
     "./*": "./src/*"
   },
   "version": "1.0.0",
-  "description": "Type definitions for nestjs yalc",
+  "description": "Type definitions to extend modules",
   "author": "Drassil"
 }

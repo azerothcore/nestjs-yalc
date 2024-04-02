@@ -3,6 +3,7 @@ import {
   BadRequestException,
   DynamicModule,
   ExceptionFilter,
+  NestApplicationOptions,
   ValidationPipe,
   ValidationPipeOptions,
 } from '@nestjs/common';
@@ -23,7 +24,6 @@ import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
 import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
 
 export interface ICreateOptions {
-  abortOnError?: boolean;
   enableSwagger?: boolean;
   filters?: ExceptionFilter[];
   validationPipeOptions?: ValidationPipeOptions;
@@ -31,6 +31,9 @@ export interface ICreateOptions {
    * On some cases we do want to manually override the apiPrefix of the service conf
    */
   apiPrefix?: string;
+}
+
+export interface INestCreateOptions extends ICreateOptions, NestApplicationOptions {
 }
 
 export interface IGlobalOptions {
@@ -50,7 +53,7 @@ export class AppBootstrap<
   }
 
   async startServer(options?: {
-    createOptions?: ICreateOptions;
+    createOptions?: INestCreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.initApp(options);
@@ -68,7 +71,7 @@ export class AppBootstrap<
   }
 
   async initApp(options?: {
-    createOptions?: ICreateOptions;
+    createOptions?: INestCreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.createApp({
@@ -100,7 +103,7 @@ export class AppBootstrap<
   }
 
   async createApp(options?: {
-    createOptions?: ICreateOptions;
+    createOptions?: INestCreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     this.fastifyInstance = options?.fastifyInstance ?? fastify();
@@ -113,6 +116,7 @@ export class AppBootstrap<
         {
           bufferLogs: false,
           abortOnError: options?.createOptions?.abortOnError ?? false,
+          ...(options?.createOptions ?? {}),
         },
       );
     } catch (err) {
