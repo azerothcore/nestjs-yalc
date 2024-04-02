@@ -1,5 +1,5 @@
 {
-  "name": "@types/nestjs-yalc-extends",
+  "name": "@nestjs-yalc/types-extends",
   "type": "module",
   "types": "./src/index.d.ts",
   "files": [
@@ -8,6 +8,11 @@
     "./src/globals.enum.ts",
     "./src/modules.d.ts"
   ],
+  "custom": {
+    "nest": {
+      "type": "library"
+    }
+  },
   "exports": {
     ".": "./src/index.d.ts",
     "./*.d.js": "./src/*.d.ts",

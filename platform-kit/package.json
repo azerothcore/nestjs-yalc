@@ -34,8 +34,7 @@
     "start": "docker-compose up -d --wait && nest start",
     "start:dev": "npm run start -- --watch",
     "start:debug": "npm run start -- --debug --watch",
-    "start:prod": "node dist/apps/sk-app/main",
-    "update:lock": "npm install --package-lock-only --workspaces false"
+    "start:prod": "node dist/apps/sk-app/main"
   },
   "dependencies": {
     "@apollo/gateway": "^2.7.1",

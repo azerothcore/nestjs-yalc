@@ -18,7 +18,7 @@ import {
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { getProviderToken } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 import { EventCrudGen } from '@nestjs-yalc/crud-gen/event.enum.js';
-import * as eventemitter2 from 'eventemitter2';
+import eventemitter2 from 'eventemitter2';
 import { type EventEmitter2 } from 'eventemitter2';
 
 export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
@@ -189,7 +189,7 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
       this.keyMap.set(findOptions, DLKey);
     }
 
-    if (Object.prototype.hasOwnProperty.call(this.dataLoaders,DLKey)) {
+    if (Object.prototype.hasOwnProperty.call(this.dataLoaders, DLKey)) {
       return this.dataLoaders[DLKey];
     }
 
@@ -293,10 +293,7 @@ export function DataLoaderFactory<Entity extends Record<string, any>>(
         eventEmitter,
       );
     },
-    inject: [
-      serviceToken ?? getServiceToken(entity),
-      eventemitter2,
-    ],
+    inject: [serviceToken ?? getServiceToken(entity), eventemitter2],
     scope: Scope.REQUEST,
   };
 }

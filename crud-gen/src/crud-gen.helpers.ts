@@ -19,9 +19,9 @@ import { ReturnTypeFuncValue } from '@nestjs/graphql';
 import {
   Equal,
   getMetadataArgsStorage,
-  ObjectLiteral,
-  Repository,
   SelectQueryBuilder,
+  DataSource,
+  ObjectLiteral,
 } from 'typeorm';
 import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs.js';
 import { RelationMetadataArgs } from 'typeorm/metadata-args/RelationMetadataArgs.js';
@@ -75,7 +75,7 @@ import {
   IModelFieldAndFilterMapper,
   isDstExtended,
 } from './object.decorator.js';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getRepositoryToken, getDataSourceToken } from '@nestjs/typeorm';
 export const columnConversion = (
   key: string,
   data: IFieldMapper | { [key: string]: IModelFieldMetadata } | undefined,
@@ -487,13 +487,14 @@ export function CrudGenDependencyFactory<Entity extends Record<string, any>>({
     );
   }
 
-  const repositoryServiceProvider: ClassType<GenericTypeORMRepository<Entity>> =
+  const repositoryServiceProvider: typeof GenericTypeORMRepository<Entity> =
     repository ?? CGExtendedRepositoryFactory<Entity>(entityModel);
   const typeOrmCustomRepository = {
     provide: getRepositoryToken(entityModel, dbConnection),
-    inject: [getProviderToken(repositoryServiceProvider)],
-    useFactory() {
-      return new repositoryServiceProvider()
+    inject: [getDataSourceToken(dbConnection)],
+    useFactory(dataSource: DataSource) {
+      return new repositoryServiceProvider(entityModel, dataSource.manager);
+    },
   };
 
   providers.push(
