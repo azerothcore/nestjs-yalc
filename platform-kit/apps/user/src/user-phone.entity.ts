@@ -1,5 +1,5 @@
 import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity.js';
-import { ObjectType } from '@nestjs/graphql';
+import { HideField, ObjectType } from '@nestjs/graphql';
 import {
   BaseEntity,
   Column,
@@ -35,5 +35,6 @@ export class YalcUserPhoneEntity extends EntityWithTimestamps(BaseEntity) {
     (meta) => meta.SkeletonPhone,
   )
   @JoinColumn([{ name: 'userId', referencedColumnName: 'guid' }])
+  @HideField()
   SkeletonUser?: Relation<YalcUserEntity>;
 }

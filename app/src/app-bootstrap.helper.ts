@@ -191,11 +191,12 @@ export class AppBootstrap<
   async listen(callback?: {
     (port: number, host: string, domain: string): void;
   }) {
-    const port = this.getConf()?.port || 0;
-    const host = this.getConf()?.host || '0.0.0.0';
-    let apiPrefix = this.getConf()?.apiPrefix;
+    const conf = this.getConf();
+    const port = conf?.port || 0;
+    const host = conf?.host || '0.0.0.0';
+    let apiPrefix = conf?.apiPrefix;
     apiPrefix = apiPrefix ? `/${apiPrefix}` : '';
-    const domain = this.getConf()?.domain || 'localhost';
+    const domain = conf?.domain || 'localhost';
     await this.getApp().listen(port, host, async (_err, address) => {
       // eslint-disable-next-line no-console
       console.debug(`Server ${this.appAlias} listening on
@@ -205,10 +206,11 @@ export class AppBootstrap<
         ${address}`);
 
       // // eslint-disable-next-line no-console
-      // console.debug(`GraphQL ${this.appAlias} listening on
-      //   http://localhost:${port}${apiPrefix}/graphql
-      //   http://127.0.0.1:${port}${apiPrefix}/graphql
-      //   http://${domain}:${port}${apiPrefix}/graphql`);
+      console.debug(`GraphQL ${this.appAlias} listening on
+        http://localhost:${port}${apiPrefix}/graphql
+        http://127.0.0.1:${port}${apiPrefix}/graphql
+        http://${domain}:${port}${apiPrefix}/graphql
+        ${address}/graphql`);
 
       if (this.isSwaggerEnabled) {
         // eslint-disable-next-line no-console

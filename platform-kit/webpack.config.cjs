@@ -13,8 +13,7 @@ const { findDevDependencies } = require('../scripts/src/dev-deps-finder.cjs');
 const { execSync } = require('child_process');
 console.debug('============== LOAD WEBPACK CONFIG ==============');
 
-const devDeps = findDevDependencies(__dirname+"/package-lock.json");
-
+const devDeps = findDevDependencies(__dirname + '/package-lock.json');
 
 program
   .option('-a, --apps <apps>', 'list of app names', (value) => value.split(','))
@@ -221,6 +220,20 @@ module.exports = (nestJsOptions) => {
                 configFile: `${__dirname}/tsconfig.json`,
                 getCustomTransformers: (program) => ({
                   before: [
+                    require('@nestjs/graphql/plugin').before(
+                      {
+                        introspectComments: true,
+                        typeFileNameSuffix: [
+                          '.input.ts',
+                          '.args.ts',
+                          '.arg.ts',
+                          '.dto.ts',
+                          '.entity.ts',
+                          '.type.ts',
+                        ],
+                      },
+                      program,
+                    ),
                     require('@nestjs/swagger/plugin').before(
                       {
                         classValidatorShim: true,
@@ -283,7 +296,7 @@ module.exports = (nestJsOptions) => {
     // ...options,
   };
 
-  const isProd =  process.env.NODE_ENV === 'production';
+  const isProd = process.env.NODE_ENV === 'production';
 
   console.log('Project name', appName);
   console.log('Command', command);
@@ -472,28 +485,26 @@ module.exports = (nestJsOptions) => {
 
   // This logic is needed by the root webpack config
   // to detect if the build passed
-  config.plugins.push(
-    function () {
-      this.hooks.done.tapAsync('shutdown', function (stats, callback) {
-        console.log(`==== Running NestJS actions for ${appName} ====`);
-        if (appName === 'all') {
-          Object.keys(nestCliJson.projects).forEach((project) => {
-            runNestJsActions(project);
-          });
-        } else {
-          runNestJsActions(appName);
-        }
+  config.plugins.push(function () {
+    this.hooks.done.tapAsync('shutdown', function (stats, callback) {
+      console.log(`==== Running NestJS actions for ${appName} ====`);
+      if (appName === 'all') {
+        Object.keys(nestCliJson.projects).forEach((project) => {
+          runNestJsActions(project);
+        });
+      } else {
+        runNestJsActions(appName);
+      }
 
-        // console.log(stats.compilation.errors);
-        if (stats.compilation.errors.length > 0 || !global.buildEmitter) {
-          callback();
-          return;
-        }
-
+      // console.log(stats.compilation.errors);
+      if (stats.compilation.errors.length > 0 || !global.buildEmitter) {
         callback();
-      });
-    },
-  );
+        return;
+      }
+
+      callback();
+    });
+  });
 
   return config;
 };

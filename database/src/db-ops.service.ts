@@ -9,8 +9,11 @@ import * as ConnOptions from 'typeorm-model-generator/dist/src/IConnectionOption
 import { getDefaultGenerationOptions } from 'typeorm-model-generator/dist/src/IGenerationOptions.js';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions.js';
 import { getDataSourceToken } from '@nestjs/typeorm';
+import { getSchemNameFromDatasource } from './typeorm.helpers.js';
 
 type IConnectionOptions = ConnOptions.default;
+
+type TDbConnection = { conn: DataSource; dbName: string };
 
 /**
  * Application service
@@ -18,9 +21,8 @@ type IConnectionOptions = ConnOptions.default;
 @Injectable()
 export class DbOpsService {
   constructor(
-    _options: any,
     private loggerService: LoggerService,
-    private dbConnections: { conn: DataSource; dbName: string }[],
+    private dbConnections: TDbConnection[],
   ) {}
 
   public async closeAllConnections() {
@@ -29,17 +31,49 @@ export class DbOpsService {
     }
   }
 
+  public async getDataSource(db: TDbConnection): Promise<DataSource> {
+    let datasource: DataSource;
+    switch (db.conn.options.type) {
+      case 'mysql':
+        datasource = new DataSource({
+          ...(db.conn.options as any),
+          type: 'mysql',
+          database: 'mysql',
+        });
+        break;
+      default:
+        datasource = db.conn;
+        break;
+    }
+
+    if (!datasource.isInitialized) await datasource.initialize();
+
+    return datasource;
+  }
+
   public async create() {
     for (const v of this.dbConnections) {
-      const schemaName = v.conn.driver.schema;
+      const schemaName = getSchemNameFromDatasource(v.conn);
       if (!schemaName) {
         this.loggerService.log(`Schema name not defined for ${v.dbName}`);
         continue;
       }
 
-      const queryRunner = v.conn.createQueryRunner();
+      const datasource = await this.getDataSource(v);
+      const queryRunner = datasource.createQueryRunner();
+
       this.loggerService.log('Creating ' + schemaName);
-      await queryRunner.createSchema(schemaName, true);
+      switch (v.conn.options.type) {
+        case 'postgres':
+          await queryRunner.createSchema(schemaName, true);
+          break;
+        case 'mysql':
+        default:
+          await queryRunner.createDatabase(schemaName, true);
+          break;
+      }
+
+      await datasource.destroy();
     }
   }
 
@@ -63,14 +97,26 @@ export class DbOpsService {
 
   public async drop() {
     for (const v of this.dbConnections) {
-      const queryRunner = v.conn.createQueryRunner();
-      if (!v.conn.driver.schema) {
+      const datasource = await this.getDataSource(v);
+      const queryRunner = datasource.createQueryRunner();
+      const schemaName = getSchemNameFromDatasource(v.conn);
+      if (!schemaName) {
         this.loggerService.error(`Schema name not defined for ${v.dbName}`);
         continue;
       }
 
-      this.loggerService.debug?.(`Dropping ${v.conn.driver.schema}`);
-      await queryRunner.dropSchema(v.conn.driver.schema.toString(), true, true);
+      this.loggerService.debug?.(`Dropping ${schemaName}`);
+      switch (v.conn.options.type) {
+        case 'postgres':
+          await queryRunner.dropSchema(schemaName.toString(), true, true);
+          break;
+        case 'mysql':
+        default:
+          await queryRunner.dropDatabase(schemaName.toString(), true);
+          break;
+      }
+
+      await datasource.destroy();
     }
   }
 
@@ -142,11 +188,7 @@ export const DbOpsServiceFactory = (
     loggerService: LoggerService,
     ...dbConnections: DataSource[]
   ) => {
-    return new DbOpsService(
-      {},
-      loggerService,
-      dbConnections.map(dbConnectionMap),
-    );
+    return new DbOpsService(loggerService, dbConnections.map(dbConnectionMap));
   },
   inject: [loggerServiceToken, ...connectionTokens.map(getDataSourceToken)],
 });

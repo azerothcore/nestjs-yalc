@@ -1,4 +1,7 @@
-import { CrudGenDependencyFactory } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
+import {
+  CrudGenDependencyFactory,
+  getProviderToken,
+} from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 import { resolverFactory } from '@nestjs-yalc/crud-gen/api-graphql/generic.resolver.js';
 import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
@@ -13,7 +16,7 @@ import {
 } from './user.dto.js';
 import { YalcUserEntity } from './user.entity.js';
 import { RoleAuth, RoleEnum } from './role.guard.js';
-import * as skeletonUserServiceJs from './user.service.js';
+import { YalcUserService } from './user.service.js';
 import { InputArgs } from '@nestjs-yalc/crud-gen/api-graphql/gqlmapper.decorator.js';
 import {
   ExtraArgsStrategy,
@@ -33,6 +36,9 @@ export const lowerCaseEmailMiddleware = (
 
 @Resolver(returnValue(YalcUserType))
 export class SkeletonUserResolver extends resolverFactory({
+  service: {
+    serviceToken: getProviderToken(YalcUserService),
+  },
   entityModel: YalcUserEntity,
   dto: YalcUserType,
   input: {
@@ -114,7 +120,7 @@ export class SkeletonUserResolver extends resolverFactory({
   },
 }) {
   constructor(
-    protected service: skeletonUserServiceJs.SkeletonUserService,
+    protected service: YalcUserService,
     protected dataloader: GQLDataLoader,
     protected moduleRef: ModuleRef,
   ) {
@@ -148,10 +154,10 @@ export const skeletonUserProvidersFactory = (dbConnection: string) =>
       dbConnection: dbConnection,
       entityModel: YalcUserEntity,
       provider: {
-        provide: 'SkeletonUserGenericService',
-        useClass:
-          skeletonUserServiceJs.skeletonUserServiceFactory(dbConnection),
+        provide: YalcUserService,
+        useClass: YalcUserService,
       },
     },
+    dbConnection,
     dataloader: { databaseKey: 'guid' },
   });

@@ -7,13 +7,13 @@
     "tsConfigPath": "!!!!!!!!!!!please-specify-a-valid-project-name!!!!!!!!!!!"
   },
   "projects": {
-    "user-module": {
-      "type": "library",
-      "root": "libs/user-module",
-      "entryFile": "index",
-      "sourceRoot": "libs/user-module/src",
+    "user": {
+      "type": "application",
+      "root": "apps/user",
+      "entryFile": "main.cjs",
+      "sourceRoot": "apps/user/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/user-module/tsconfig.lib.json"
+        "tsConfigPath": "apps/user/tsconfig.app.json"
       }
     },
     "platform": {

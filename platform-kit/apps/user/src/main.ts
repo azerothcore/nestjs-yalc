@@ -1,9 +1,10 @@
-import { NestFactory } from '@nestjs/core';
 import { YalcAppUserApiModule } from './app-user-api.module.js';
+import { AppBootstrap } from '@nestjs-yalc/app/app-bootstrap.helper.js';
+import { APP_ALIAS_USER_API } from './user.def.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(YalcAppUserApiModule);
-  await app.listen(3000);
+  const app = new AppBootstrap(APP_ALIAS_USER_API, YalcAppUserApiModule);
+  await app.startServer();
 }
 
 void bootstrap();

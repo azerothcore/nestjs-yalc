@@ -1,6 +1,6 @@
 import { ModelField } from '@nestjs-yalc/crud-gen/object.decorator.js';
 import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity.js';
-import { ObjectType } from '@nestjs/graphql';
+import { HideField, ObjectType } from '@nestjs/graphql';
 import {
   BaseEntity,
   Column,
@@ -40,12 +40,12 @@ export class YalcUserEntity extends EntityWithTimestamps(BaseEntity) {
   })
   // virtual column, not selectable
   // handled by the @ModelField
-  @Column({
-    select: false,
-    insert: false,
-    update: false,
-    type: 'varchar',
-  })
+  // @Column({
+  //   select: false,
+  //   insert: false,
+  //   update: false,
+  //   type: 'varchar',
+  // })
   fullName!: string;
 
   @OneToMany(
@@ -55,5 +55,6 @@ export class YalcUserEntity extends EntityWithTimestamps(BaseEntity) {
     (meta) => meta.SkeletonUser,
   )
   @JoinColumn([{ name: 'guid', referencedColumnName: 'userId' }])
+  @HideField()
   SkeletonPhone?: Relation<YalcUserPhoneEntity[]>;
 }

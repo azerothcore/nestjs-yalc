@@ -33,6 +33,7 @@ import { EventModule } from '@nestjs-yalc/event-manager/index.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { YalcClsModule } from './cls.module.js';
 import { IYalcControllerStaticInterface } from './yalc-controller.interface.js';
+import path from 'path';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -62,17 +63,20 @@ export function getCachedModule(module: any, isSingleton: boolean) {
 }
 
 export function envFilePathList(dirname: string = '.') {
+  const absPath = path.resolve(dirname);
+  Logger.debug(`Loading env from: ${absPath}`);
+
   const envFilePath: string[] = [];
 
-  envFilePath.push(`${dirname}/.env`); // user-defined env (git-ignored)
+  envFilePath.push(`${absPath}/.env`); // user-defined env (git-ignored)
 
   if (process.env.NODE_ENV) {
-    envFilePath.push(`${dirname}/.env.${process.env.NODE_ENV}`); // user-defined env (git-ignored)
+    envFilePath.push(`${absPath}/.env.${process.env.NODE_ENV}`); // user-defined env (git-ignored)
   }
 
   // .env.dist is always loaded except in production
   if (process.env.NODE_ENV !== 'production')
-    envFilePath.push(`${dirname}/.env.dist`);
+    envFilePath.push(`${absPath}/.env.dist`);
 
   return envFilePath;
 }
@@ -175,8 +179,6 @@ export function yalcBaseAppModuleMetadataFactory(
   const envFilePath: string[] = [];
 
   if (!_options.envPath) {
-    Logger.debug(`Loading env from: ${_options.envDir}`);
-
     envFilePath.push(...envFilePathList(_options.envDir));
   } else {
     envFilePath.push(..._options.envPath);

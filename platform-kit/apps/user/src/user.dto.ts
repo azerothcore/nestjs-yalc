@@ -15,10 +15,11 @@ import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar.js';
 import { YalcPhoneType } from './user-phone.dto.js';
 import { type TypeRef } from '@nestjs-yalc/types';
 
-@ObjectType()
 @ModelObject()
+@ObjectType()
 export class YalcUserType extends YalcUserEntity {
   @ModelField<YalcPhoneType>({
+    gqlType: () => [YalcPhoneType],
     relation: {
       type: () => YalcPhoneType,
       relationType: 'one-to-many',

@@ -2,6 +2,7 @@ import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { DynamicModule, INestApplicationContext } from '@nestjs/common';
 import { StandaloneAppBootstrap } from './app-bootstrap-standalone.helper.js';
 import lodash from 'lodash';
+import { AppBootstrap } from './app-bootstrap.helper.js';
 const { curry } = lodash;
 
 export function isDynamicModule(module: any): module is DynamicModule {
@@ -27,11 +28,30 @@ export const executeFunctionForApp = async (
  * @param module
  * @returns
  */
-export const curriedExecuteStandaloneFunction = async (module: any) =>
-  curry(executeFunctionForApp)(
+export const curriedExecuteStandaloneFunction = async (
+  module: any,
+  appAlias?: string,
+) => {
+  return curry(executeFunctionForApp)(
     (
       await new StandaloneAppBootstrap(
-        isDynamicModule(module) ? module.module.name : module.name,
+        appAlias ??
+          (isDynamicModule(module) ? module.module.name : module.name),
+        module,
+      ).initApp()
+    ).getApp(),
+  );
+};
+
+export const curriedExecuteAppFunction = async (
+  module: any,
+  appAlias?: string,
+) =>
+  curry(executeFunctionForApp)(
+    (
+      await new AppBootstrap(
+        appAlias ??
+          (isDynamicModule(module) ? module.module.name : module.name),
         module,
       ).initApp()
     ).getApp(),
@@ -39,10 +59,6 @@ export const curriedExecuteStandaloneFunction = async (module: any) =>
 
 /**
  *
- * @param module
- * @param serviceType
- * @param fn
- * @returns
  */
 export const executeStandaloneFunction = async <TService>(
   module: DynamicModule,

@@ -12,6 +12,7 @@ import type { IServiceConf } from './conf.type.js';
 import { SYSTEM_LOGGER_SERVICE } from './def.const.js';
 import { YalcDefaultAppModule } from './base-app-module.helper.js';
 import { ICreateOptions, IGlobalOptions } from './app-bootstrap.helper.js';
+import { getAppConfigToken } from './app-config.service.js';
 
 export abstract class BaseAppBootstrap<
   TAppType extends NestFastifyApplication | INestApplicationContext,
@@ -43,7 +44,9 @@ export abstract class BaseAppBootstrap<
   }
 
   getConf() {
-    const configService = this.getApp().get<ConfigService>(ConfigService);
+    const configService = this.getApp().get<ConfigService>(
+      getAppConfigToken(this.appAlias),
+    );
     return configService.get<IServiceConf>(this.appAlias);
   }
 

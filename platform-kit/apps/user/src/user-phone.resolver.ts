@@ -22,4 +22,5 @@ export const yalcPhoneProviderFactory = (dbConnection: string) =>
     },
     service: { dbConnection },
     dataloader: { databaseKey: 'phoneNumber' },
+    dbConnection,
   });

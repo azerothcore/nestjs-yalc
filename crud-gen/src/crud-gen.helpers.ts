@@ -20,6 +20,7 @@ import {
   Equal,
   getMetadataArgsStorage,
   ObjectLiteral,
+  Repository,
   SelectQueryBuilder,
 } from 'typeorm';
 import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs.js';
@@ -74,6 +75,7 @@ import {
   IModelFieldAndFilterMapper,
   isDstExtended,
 } from './object.decorator.js';
+import { getRepositoryToken } from '@nestjs/typeorm';
 export const columnConversion = (
   key: string,
   data: IFieldMapper | { [key: string]: IModelFieldMetadata } | undefined,
@@ -350,9 +352,8 @@ export function isIFieldAndFilterMapper(
   return val?.field !== undefined;
 }
 
-export interface IDependencyObject<Entity extends ObjectLiteral> {
+export interface IDependencyObject {
   providers: Array<FactoryProvider | Provider>;
-  repository: ClassType<GenericTypeORMRepository<Entity>>;
 }
 
 export interface IProviderOverride<T = any> {
@@ -392,6 +393,7 @@ export interface ICrudGenDependencyFactoryOptions<
   service?: IGenericServiceOptions<Entity> | IProviderOverride;
   dataloader?: IDataLoaderOptions<Entity> | IProviderOverride;
   repository?: ClassType<GenericTypeORMRepository<Entity>>;
+  dbConnection: string;
 }
 
 export function isProviderOverride(
@@ -407,7 +409,8 @@ export function CrudGenDependencyFactory<Entity extends Record<string, any>>({
   resolver,
   service,
   repository,
-}: ICrudGenDependencyFactoryOptions<Entity>): IDependencyObject<Entity> {
+  dbConnection,
+}: ICrudGenDependencyFactoryOptions<Entity>): IDependencyObject {
   const providers: Provider[] = [];
 
   const resolverOptions: IGenericResolverOptions<Entity> = {
@@ -420,7 +423,14 @@ export function CrudGenDependencyFactory<Entity extends Record<string, any>>({
   if (service) {
     if (isProviderOverride(service)) {
       serviceToken = getProviderToken(service.provider.provide);
+      /**
+       * We can provide it as a string or as a class
+       */
       providers.push(service.provider);
+      providers.push({
+        provide: serviceToken,
+        useExisting: service.provider.provide,
+      });
     } else {
       const provider = GenericServiceFactory<Entity>(
         service.entityModel ?? entityModel,
@@ -446,6 +456,10 @@ export function CrudGenDependencyFactory<Entity extends Record<string, any>>({
     if (isProviderOverride(dataloader)) {
       dataLoaderToken = getProviderToken(dataloader.provider.provide);
       providers.push(dataloader.provider);
+      providers.push({
+        provide: dataLoaderToken,
+        useExisting: dataloader.provider.provide,
+      });
     } else {
       dataLoaderToken = getDataloaderToken(
         dataloader.entityModel ?? entityModel,
@@ -473,9 +487,30 @@ export function CrudGenDependencyFactory<Entity extends Record<string, any>>({
     );
   }
 
+  const repositoryServiceProvider: ClassType<GenericTypeORMRepository<Entity>> =
+    repository ?? CGExtendedRepositoryFactory<Entity>(entityModel);
+  const typeOrmCustomRepository = {
+    provide: getRepositoryToken(entityModel, dbConnection),
+    inject: [getProviderToken(repositoryServiceProvider)],
+    useFactory() {
+      return new repositoryServiceProvider()
+  };
+
+  providers.push(
+    typeOrmCustomRepository,
+    // {
+    //   provide: getRepositoryToken(entityModel, dbConnection),
+    //   useExisting: repositoryServiceProvider,
+    // },
+    {
+      provide: getProviderToken(repositoryServiceProvider),
+      useExisting: repositoryServiceProvider,
+    },
+    repositoryServiceProvider,
+  );
+
   return {
     providers,
-    repository: repository ?? CGExtendedRepositoryFactory<Entity>(entityModel),
   };
 }
 

@@ -15,9 +15,11 @@ import { CrudGenFindManyOptions } from '../api-graphql/crud-gen-gql.interface.js
 import { IWhereFilters } from '../api-graphql/crud-gen-gql.type.js';
 import { IModelFieldMetadata } from '../object.decorator.js';
 import '../query-builder.helpers.js'; // must be imported here
+import { Injectable } from '@nestjs/common';
 
 export const AG_GRID_MAIN_ALIAS = 'CrudGenMainAlias';
 
+@Injectable()
 export class GenericTypeORMRepository<
   Entity extends ObjectLiteral,
 > extends Repository<Entity> {
