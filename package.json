@@ -70,7 +70,7 @@
     "aws-lambda-fastify": "^2.2.0",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.13.0",
+    "class-validator": "^0.14.0",
     "cli-color": "^2.0.3",
     "commander": "^10.0.0",
     "csurf": "^1.11.0",
@@ -81,7 +81,7 @@
     "joi": "^17.9.2",
     "lodash": "^4.17.21",
     "mobile-detect": "^1.4.5",
-    "mysql2": "^3.1.2",
+    "mysql2": "^3.9.4",
     "node-fetch": "^3.3.0",
     "p-map": "^5.5.0",
     "passport": "^0.6.0",
@@ -90,13 +90,13 @@
     "pino": "^8.10.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
-    "typeorm": "^0.3.12",
+    "typeorm": "^0.3.13",
     "typeorm-model-generator": "^0.4.6",
     "uuidv4": "^6.2.13"
   },
   "optionalDependencies": {
     "@graphql-tools/wrap": "^9.3.6",
-    "graphql": "^16.6.0",
+    "graphql": "^16.8.1",
     "graphql-type-json": "^0.3.2"
   },
   "devDependencies": {
