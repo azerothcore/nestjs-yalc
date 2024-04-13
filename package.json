@@ -76,7 +76,6 @@
     "csurf": "^1.11.0",
     "dataloader": "^2.2.1",
     "decimal.js": "^10.4.3",
-    "faker": "^6.6.6",
     "google-libphonenumber": "^3.2.32",
     "joi": "^17.9.2",
     "lodash": "^4.17.21",
@@ -91,13 +90,17 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
     "typeorm": "^0.3.14",
-    "typeorm-model-generator": "^0.4.6",
     "uuidv4": "^6.2.13"
   },
   "optionalDependencies": {
     "@graphql-tools/wrap": "^9.3.6",
     "graphql": "^16.8.1",
-    "graphql-type-json": "^0.3.2"
+    "graphql-type-json": "^0.3.2",
+    "typeorm-model-generator": "^0.4.6"
+  },
+  "overrides": {
+    "mysql2": "^3.9.4",
+    "typeorm": "^0.3.14"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
