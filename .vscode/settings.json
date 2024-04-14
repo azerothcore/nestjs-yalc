@@ -1,6 +1,6 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -20,12 +20,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "debug.javascript.autoAttachFilter": "onlyWithFlag",
-  "jest.showCoverageOnLoad": true,
   "jest.jestCommandLine": "npm run test:vscode --",
-  "jest.autoRun": {
-    "watch": false,
-    "onSave": "test-file"
-  },
   "jest.coverageFormatter": "DefaultFormatter",
   "eslint.workingDirectories": [
     {

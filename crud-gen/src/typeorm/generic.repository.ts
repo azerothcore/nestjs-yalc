@@ -72,7 +72,7 @@ export class GenericTypeORMRepository<
       strippedFindOptions.select = [];
     }
 
-    let queryBuilder = qb ?? this.createQueryBuilder(extra?._aliasType);
+    const queryBuilder = qb ?? this.createQueryBuilder(extra?._aliasType);
 
     const connection = queryBuilder.connection;
 
