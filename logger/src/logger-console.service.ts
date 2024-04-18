@@ -21,6 +21,7 @@ export class ConsoleLogger extends LoggerAbstractService {
             `[${options?.context ?? context}]`,
             message,
             maskDataInObject(options?.data, options?.masks, options?.trace),
+            options?.config,
             ...rest,
           ),
         error: (message, trace, options, ...rest) =>
@@ -29,6 +30,7 @@ export class ConsoleLogger extends LoggerAbstractService {
             message,
             trace,
             maskDataInObject(options?.data, options?.masks),
+            options?.config,
             ...rest,
           ),
         debug: (message, options, ...rest) =>
@@ -36,6 +38,7 @@ export class ConsoleLogger extends LoggerAbstractService {
             `[${options?.context ?? context}]`,
             message,
             maskDataInObject(options?.data, options?.masks, options?.trace),
+            options?.config,
             ...rest,
           ),
         warn: (message, options, ...rest) =>
@@ -43,6 +46,7 @@ export class ConsoleLogger extends LoggerAbstractService {
             `[${options?.context ?? context}]`,
             message,
             maskDataInObject(options?.data, options?.masks, options?.trace),
+            options?.config,
             ...rest,
           ),
         verbose: (message, options, ...rest) =>
@@ -50,6 +54,7 @@ export class ConsoleLogger extends LoggerAbstractService {
             `[${options?.context ?? context}]`,
             message,
             maskDataInObject(options?.data, options?.masks, options?.trace),
+            options?.config,
             ...rest,
           ),
       },

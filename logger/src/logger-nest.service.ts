@@ -26,9 +26,9 @@ export class ImprovedNestLogger
   }
 
   private composeMessage(message: any, options: LogMethodOptions) {
-    const masked = maskDataInObject(options.data, options.masks, options.trace);
+    const data = { ...maskDataInObject(options.data, options.masks, options.trace), ...options.config };
 
-    return message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : '');
+    return message + (data ? `\n${JSON.stringify(data, null, 2)}` : '');
   }
 
   log(message: any): void;
