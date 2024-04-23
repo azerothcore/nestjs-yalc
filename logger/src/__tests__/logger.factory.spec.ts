@@ -21,6 +21,7 @@ jest.mock('@nestjs/common', () => ({
 
 import { LogLevelEnum, LoggerTypeEnum } from '../logger.enum.js';
 import { AppLoggerFactory } from '../logger.factory.js';
+import { PinoLogger } from '../logger-pino.service.js';
 
 describe('AppLoggerFactory', () => {
   // let mockConfigService;
@@ -40,6 +41,7 @@ describe('AppLoggerFactory', () => {
       LoggerTypeEnum.PINO,
     );
     expect(logger).toBeDefined();
+    expect(logger instanceof PinoLogger).toBeTruthy();
 
     logger = AppLoggerFactory(
       'test',

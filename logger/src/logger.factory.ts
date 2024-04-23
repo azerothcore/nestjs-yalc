@@ -48,4 +48,6 @@ export const AppLoggerFactory = _.memoize(
 
     return logger;
   },
+  (context, loggerLevels, loggerType, options) =>
+    `${context}-${loggerLevels?.join('-')}-${loggerType}-${options}`,
 );
