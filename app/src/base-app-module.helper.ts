@@ -200,7 +200,7 @@ export function yalcBaseAppModuleMetadataFactory(
     );
 
     _imports.push(
-      EventModule.forRootAsync({
+      (options?.eventModuleClass ?? EventModule).forRootAsync({
         imports: [module],
         loggerProvider: {
           provide: 'INTERNAL_APP_LOGGER_SERVICE',
