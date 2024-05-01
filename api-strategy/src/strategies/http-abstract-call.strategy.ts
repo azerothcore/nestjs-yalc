@@ -14,7 +14,7 @@ export interface HttpOptions<
   TData = string | object | Buffer | NodeJS.ReadableStream,
   TParams extends Record<string, any> = Record<string, any>,
 > {
-  headers?: IncomingHttpHeaders & { [key: string]: string | string [] };
+  headers?: IncomingHttpHeaders & { [key: string]: string | string[] };
   method?: HTTPMethods;
   signal?: AbortSignal;
   Request?: object;
