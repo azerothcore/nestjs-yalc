@@ -117,5 +117,5 @@ export const NestLocalCallStrategyProvider = (
       _options.baseUrl,
     );
   },
-  inject: [HttpAdapterHost, YalcGlobalClsService],
+  inject: [HttpAdapterHost, YalcGlobalClsService, AppConfigService],
 });
