@@ -59,7 +59,7 @@ export class AppBootstrap<
     await this.initApp(options);
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
-      await this.getApp().close;
+      await this.getApp().close();
       process.exit(0);
     }
 
@@ -95,7 +95,7 @@ export class AppBootstrap<
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
       this.loggerService?.log('Dry run, exiting...');
-      await this.getApp().close;
+      await this.getApp().close();
       process.exit(0);
     }
 

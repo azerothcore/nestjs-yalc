@@ -26,7 +26,7 @@ export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationCon
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
       this.loggerService?.log('Dry run, exiting...');
-      await this.getApp().close;
+      await this.getApp().close();
       process.exit(0);
     }
 
