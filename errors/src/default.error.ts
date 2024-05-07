@@ -24,7 +24,7 @@ export interface ISharedErrorProperties {
 
   /**
    * Configuration for alarms and event handling
-   */  
+   */
   config?: any;
 
   /**
@@ -61,9 +61,7 @@ export interface IHttpExceptionArguments {
 export interface IHttpExceptionParentArguments
   extends Omit<IHttpExceptionArguments, 'errorCode'> {}
 
-export interface IErrorPayload
-  extends ISharedErrorProperties {
-  
+export interface IErrorPayload extends ISharedErrorProperties {
   /**
    * The response that can be sent to the client. It can be a string or an object (including an error object)
    * It must not contain sensitive data.
@@ -276,7 +274,7 @@ export const DefaultErrorMixin = <
         ? maskDataInObject(options.data, options.masks)
         : options.data;
 
-      let cause = formatCause(this.cause);
+      const cause = formatCause(this.cause);
 
       const payload: ILogErrorPayload = {
         data: this.data,

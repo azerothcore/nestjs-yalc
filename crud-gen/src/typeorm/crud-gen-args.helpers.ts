@@ -128,7 +128,7 @@ export function getDateFilter(
       return MoreThan(firstParameter);
     case GeneralFilters.INRANGE.toLowerCase():
       return Between(firstParameter, secondParameter) as FindOperator<string>;
-    case GeneralFilters.INDATE.toLowerCase():
+    case GeneralFilters.INDATE.toLowerCase(): {
       const dateFrom = new Date(firstParameter).setHours(0, 0, 0, 0);
       const dateTo = new Date(secondParameter ?? firstParameter).setHours(
         23,
@@ -140,6 +140,7 @@ export function getDateFilter(
         DateHelper.dateToSQLDateTime(new Date(dateFrom)),
         DateHelper.dateToSQLDateTime(new Date(dateTo)),
       );
+    }
     default:
       throw new CrudGenFilterNotSupportedError(`filter: ${filter} type: DATE`);
   }
@@ -387,7 +388,7 @@ export function mapCrudGenParam<Entity extends ObjectLiteral>(
   const defaultSorting = params?.defaultValue?.sorting;
 
   // MAP filter -> where
-  let where = args.filters
+  const where = args.filters
     ? createWhere(args.filters, fieldMapper)
     : { filters: {} };
 
@@ -398,7 +399,7 @@ export function mapCrudGenParam<Entity extends ObjectLiteral>(
   // MAP sorting -> order
   const order: FindOptionsOrder<Entity> = mapSortingParamsToTypeORM(
     args.sorting ?? defaultSorting ?? [],
-    (col: string | number | Symbol) => {
+    (col: string | number | symbol) => {
       let colName = col.toString();
       if (fieldMapper[colName]?.mode === 'derived') {
         colName = formatRawSelectionWithoutAlias(
@@ -479,7 +480,7 @@ export function mapSortingParamsToTypeORM<TInputType = any, TEntityType = any>(
   if (sorting) {
     sorting.forEach((sortParams) => {
       const col = sortParams.colId;
-      let colName: keyof TEntityType = transform?.(col) ?? (col as any);
+      const colName: keyof TEntityType = transform?.(col) ?? (col as any);
 
       const val = sortParams.sort?.toUpperCase();
       const sortDir: 'ASC' | 'DESC' = <SortDirection>val ?? 'ASC';

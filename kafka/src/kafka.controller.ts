@@ -1,10 +1,10 @@
-import { Controller } from "@nestjs/common";
+import { Controller } from '@nestjs/common';
 import {
   DeepPartial,
   FindOptionsWhere,
   ObjectLiteral,
-  Repository
-} from "typeorm";
+  Repository,
+} from 'typeorm';
 
 @Controller()
 export class KafkaController<Entity extends ObjectLiteral> {
@@ -20,7 +20,7 @@ export class KafkaController<Entity extends ObjectLiteral> {
   checkTargetValue<Entity, U extends keyof Entity>(
     target: Entity,
     key: U,
-    value: Array<Entity[U]>
+    value: Array<Entity[U]>,
   ): boolean {
     return value.includes(target[key]);
   }
@@ -44,7 +44,7 @@ export class KafkaController<Entity extends ObjectLiteral> {
   async saveEntityOrUpdate(
     entity: DeepPartial<Entity>,
     overWrite: string[],
-    conflitTarget?: string | string[]
+    conflitTarget?: string | string[],
   ) {
     return this.repository
       .createQueryBuilder()

@@ -54,7 +54,7 @@ export interface IEventServiceOptions<
 export class YalcEventService<
   TFormatter extends EventNameFormatter = EventNameFormatter,
   TEventOptions extends IEventOptions<TFormatter> = IEventOptions<TFormatter>,
-  TErrorOptions extends IErrorEventOptions<TFormatter> = IErrorEventOptions<TFormatter>, 
+  TErrorOptions extends IErrorEventOptions<TFormatter> = IErrorEventOptions<TFormatter>,
 > {
   constructor(
     protected readonly loggerService: ImprovedLoggerService,
@@ -426,7 +426,7 @@ export class YalcEventService<
   protected buildOptions<
     TOpts extends IErrorEventOptions<TFormatter> | IEventOptions<TFormatter>,
   >(options?: TOpts): TOpts {
-    let _options: TOpts = { ...(options as TOpts) };
+    const _options: TOpts = { ...(options as TOpts) };
 
     let event: IEventOptions<TFormatter>['event'];
     if (_options?.event !== undefined || this.eventEmitter) {
@@ -445,7 +445,7 @@ export class YalcEventService<
       errorOptions.errorClass ??= DefaultError;
     }
 
-    const res: IErrorEventOptions<TFormatter>  = {
+    const res: IErrorEventOptions<TFormatter> = {
       ..._options,
       event,
       logger:
@@ -461,7 +461,7 @@ export class YalcEventService<
   }
 
   protected buildErrorOptions<TErrorClass extends DefaultError = DefaultError>(
-    options: IErrorEventOptions<TFormatter>  = {},
+    options: IErrorEventOptions<TFormatter> = {},
     defaultClass: ClassType<TErrorClass> | boolean = true,
   ): IErrorEventOptionsRequired<TFormatter, TErrorClass> {
     options.errorClass ??= defaultClass;

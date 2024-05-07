@@ -1,5 +1,5 @@
-import AWS from "aws-sdk";
-import { AWSError } from "aws-sdk";
+import AWS from 'aws-sdk';
+import { AWSError } from 'aws-sdk';
 
 interface SqsConfig {
   endpoint: string;
@@ -9,21 +9,21 @@ interface SqsConfig {
 
 export const pushToAwsSQS = async (
   config: SqsConfig,
-  message: any
+  message: any,
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     const sqs = new AWS.SQS({ region: config.region });
     sqs.sendMessage(
       {
         QueueUrl: config.endpoint + config.queueName,
-        MessageBody: message
+        MessageBody: message,
       },
       (error: AWSError) => {
         if (error) {
           reject(error);
         }
         resolve();
-      }
+      },
     );
   });
 };

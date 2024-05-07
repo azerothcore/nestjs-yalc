@@ -7,8 +7,6 @@ import { dbConnectionMap } from './conn.helper.js';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions.js';
 import { getDataSourceToken } from '@nestjs/typeorm';
 
-
-
 /**
  * Application service
  */

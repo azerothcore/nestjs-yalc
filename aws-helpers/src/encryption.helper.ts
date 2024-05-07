@@ -90,9 +90,10 @@ export const decryptString = async (
   encryptionKey = staticKey,
 ): Promise<string> => {
   switch (encryptMode) {
-    case EncryptMode.AWS:
+    case EncryptMode.AWS: {
       const decryptionResult: string = await asyncDecrypt(toDecrypt);
       return decryptionResult.toString();
+    }
     case EncryptMode.LOCAL:
     default:
       return localEncryption.decryptAes(toDecrypt, encryptionKey);
@@ -111,9 +112,10 @@ export const encryptString = async (
   encryptionKey = staticKey,
 ): Promise<string> => {
   switch (encryptMode) {
-    case EncryptMode.AWS:
+    case EncryptMode.AWS: {
       const encryptionResult: string = await asyncEncrypt(toEncrypt);
       return encryptionResult;
+    }
     case EncryptMode.LOCAL:
     default:
       return localEncryption.encryptAes(toEncrypt, encryptionKey);

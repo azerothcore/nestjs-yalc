@@ -151,9 +151,10 @@ export function yalcBaseAppModuleMetadataFactory(
     },
   ];
 
-  if (options?.logger) {
+  const logger = options?.logger;
+  if (logger) {
     _providers.push(
-      (options?.logger === true ? LoggerServiceFactory : options?.logger)(
+      (logger === true ? LoggerServiceFactory : logger)(
         appAlias,
         APP_LOGGER_SERVICE,
         appAlias,
@@ -191,7 +192,7 @@ export function yalcBaseAppModuleMetadataFactory(
     _providers.push(...providers);
   }
 
-  let _imports: DynamicModule['imports'] = [];
+  const _imports: DynamicModule['imports'] = [];
 
   if (hasConfig) {
     const envFilePath: string[] = _buildEnvFilePath(

@@ -166,7 +166,6 @@ export function AppDependencyFactory(
       GraphQLModule.forRootAsync<ApolloFederationDriverConfig>({
         driver: ApolloFederationDriver,
         imports: [ApolloPluginsModule.forRoot()],
-        // @ts-ignore - TODO: FIXME
         useFactory: async (
           configService: ConfigService,
           appContext: AppContextService,

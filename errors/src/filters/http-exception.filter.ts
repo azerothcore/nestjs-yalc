@@ -65,45 +65,49 @@ export class HttpExceptionFilter
          * @todo refactor with the default error mixin
          */
         case isEntityError(error):
-          const entityError = error as EntityError;
-          this.logger.error(
-            entityError.originalError?.message
-              ? entityError.originalError.message
-              : error,
-            entityError.originalError?.stack,
-            {
-              trace: entityError.originalError?.stack,
-              data: {
-                response: entityError.getResponse(),
-                name: entityError.name,
-                cause: formatCause(entityError.cause),
+          {
+            const entityError = error as EntityError;
+            this.logger.error(
+              entityError.originalError?.message
+                ? entityError.originalError.message
+                : error,
+              entityError.originalError?.stack,
+              {
+                trace: entityError.originalError?.stack,
+                data: {
+                  response: entityError.getResponse(),
+                  name: entityError.name,
+                  cause: formatCause(entityError.cause),
+                },
               },
-            },
-          );
+            );
+          }
           break;
 
         case isHttpError:
-          const httpError = error as common.HttpException;
-          const logLevel = getLogLevelByStatus(httpError.getStatus());
+          {
+            const httpError = error as common.HttpException;
+            const logLevel = getLogLevelByStatus(httpError.getStatus());
 
-          if (logLevel === LogLevelEnum.ERROR) {
-            this.logger[logLevel](error.message, error.stack, {
-              trace: httpError.stack,
-              data: {
-                response: httpError.getResponse(),
-                name: error.name,
-                cause: formatCause(error.cause),
-              },
-            });
-          } else {
-            this.logger[logLevel](error.message, {
-              trace: error.stack,
-              data: {
-                response: httpError.getResponse(),
-                name: error.name,
-                cause: formatCause(error.cause),
-              },
-            });
+            if (logLevel === LogLevelEnum.ERROR) {
+              this.logger[logLevel](error.message, error.stack, {
+                trace: httpError.stack,
+                data: {
+                  response: httpError.getResponse(),
+                  name: error.name,
+                  cause: formatCause(error.cause),
+                },
+              });
+            } else {
+              this.logger[logLevel](error.message, {
+                trace: error.stack,
+                data: {
+                  response: httpError.getResponse(),
+                  name: error.name,
+                  cause: formatCause(error.cause),
+                },
+              });
+            }
           }
           break;
 

@@ -81,8 +81,8 @@ export class EventModule {
 
     const eventProviderName = options?.eventServiceToken ?? YalcEventService;
 
-    let imports: any[] = options?.imports ?? [];
-    let providers: Provider[] = [
+    const imports: any[] = options?.imports ?? [];
+    const providers: Provider[] = [
       {
         provide: eventProviderName,
         useFactory: (logger: ImprovedLoggerService, emitter: EventEmitter2) => {

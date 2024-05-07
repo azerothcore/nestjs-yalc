@@ -189,7 +189,7 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
       this.keyMap.set(findOptions, DLKey);
     }
 
-    if (this.dataLoaders.hasOwnProperty(DLKey)) {
+    if (Object.prototype.hasOwnProperty.call(this.dataLoaders, DLKey)) {
       return this.dataLoaders[DLKey];
     }
 

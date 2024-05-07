@@ -209,7 +209,7 @@ export function jestConfGenerator(
     paths.push(...argv.paths);
   }
 
-  let possiblePath =
+  const possiblePath =
     (paths.length > 0 ? paths : null) ??
     argv.testPathPattern?.[0] ??
     argv.coverage ??
@@ -269,7 +269,7 @@ export function jestConfGenerator(
 
     // eslint-disable-next-line no-console
     console.debug('testPaths', testPaths);
-    let subProjectPathList = testPaths.map((v) => getSubprojectPath(v));
+    const subProjectPathList = testPaths.map((v) => getSubprojectPath(v));
 
     selectedProjects = projects.filter((v: any) =>
       subProjectPathList.some((subProjectPath) =>

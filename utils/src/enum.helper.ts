@@ -29,6 +29,6 @@ export const getEnumValueByEnumKey = <T extends { [index: string]: string }>(
   enumKey: string | undefined,
 ): any | null => {
   if (!enumKey) return undefined;
-  let idx = Object.keys(myEnum).find((x) => x === enumKey);
+  const idx = Object.keys(myEnum).find((x) => x === enumKey);
   return idx ? myEnum[idx] : undefined;
 };

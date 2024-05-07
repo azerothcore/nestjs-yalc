@@ -1,4 +1,4 @@
-import { faker } from "@faker-js/faker";
+import { faker } from '@faker-js/faker';
 
 // TODO: Probably we can use the internal faker of typeorm-seeding to create uniqueness, like we do here
 // (mentioned in https://github.com/w3tecch/typeorm-seeding/issues/98#issuecomment-849585576)
@@ -10,7 +10,7 @@ export class FakerHelper {
   // We could also create a new email from the same person,
   // however we assume when this function is called we actually want a different person.
   createPerson() {
-    const gender = faker.datatype.number(1) === 0 ? "male" : "female";
+    const gender = faker.datatype.number(1) === 0 ? 'male' : 'female';
     const firstName = faker.name.firstName(gender);
     const lastName = faker.name.lastName(gender);
 
@@ -18,19 +18,19 @@ export class FakerHelper {
       gender,
       firstName,
       lastName,
-      email: this.generateNewEmail(firstName, lastName, "gmail.test")
+      email: this.generateNewEmail(firstName, lastName, 'gmail.test'),
     };
   }
 
   generateNewEmail(firstName: string, lastName: string, provider?: string) {
     return faker.unique(faker.internet.email, [firstName, lastName, provider], {
       maxRetries: DEF_FAKER_MAX_RETRIES,
-      maxTime: DEF_FAKER_MAX_TIME
+      maxTime: DEF_FAKER_MAX_TIME,
     });
   }
 
   randomFromEnum<T extends Record<string, string | number>>(
-    inputEnum: T
+    inputEnum: T,
   ): T[keyof T] {
     const randInt = faker.datatype.number(Object.keys(inputEnum).length - 1);
     return inputEnum[Object.keys(inputEnum)[randInt] as keyof typeof inputEnum];
@@ -48,14 +48,14 @@ export class FakerHelper {
     const birthDate = faker.date.past(end - start);
     birthDate.setUTCFullYear(birthDate.getUTCFullYear() - start);
     // const [mm, dd, yyyy] = birthDate.format('yyyy-MM-dd').toLocaleString().split(',')[0].split('/');
-    let yyyy = new Intl.DateTimeFormat("en", { year: "numeric" }).format(
-      birthDate
+    const yyyy = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(
+      birthDate,
     );
-    let mm = new Intl.DateTimeFormat("en", { month: "numeric" }).format(
-      birthDate
+    const mm = new Intl.DateTimeFormat('en', { month: 'numeric' }).format(
+      birthDate,
     );
-    let dd = new Intl.DateTimeFormat("en", { day: "2-digit" }).format(
-      birthDate
+    const dd = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(
+      birthDate,
     );
 
     return `${yyyy}-${mm}-${dd}`;

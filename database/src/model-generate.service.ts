@@ -17,7 +17,6 @@ export class ModelGenerateService {
     private dbConnections: { conn: DataSource; dbName: string }[],
   ) {}
 
-
   public async generate(dbName: string, tables: string[], genPath?: string) {
     this.loggerService.debug?.('Exporting db to TypeORM entities...');
 

@@ -178,7 +178,7 @@ export class QueryBuilderHelper {
         return `${aliasPath} >= ${parameters[0]}`;
       case 'equal':
         return `${aliasPath} = ${parameters[0]}`;
-      case 'ilike':
+      case 'ilike': {
         if (queryBuilder === undefined) {
           throw new Error(
             `To use the 'ilike' filter the query builder should be defined`,
@@ -194,6 +194,7 @@ export class QueryBuilderHelper {
         }
 
         return `UPPER(${aliasPath}) LIKE UPPER(${parameters[0]})`;
+      }
       case 'like':
         return `${aliasPath} LIKE ${parameters[0]}`;
       case 'between':

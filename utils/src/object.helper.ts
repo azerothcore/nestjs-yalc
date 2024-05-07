@@ -59,7 +59,7 @@ export const deepMerge: IDeepMerge = (
 
       if (isObject(elm)) {
         for (const key in elm) {
-          if (elm.hasOwnProperty(key)) {
+          if (Object.prototype.hasOwnProperty.call(elm, key)) {
             if (isObject(elm[key])) {
               if (!result[key] || !isObject(result[key])) {
                 result[key] = {};
