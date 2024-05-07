@@ -33,8 +33,9 @@ export interface ICreateOptions {
   apiPrefix?: string;
 }
 
-export interface INestCreateOptions extends ICreateOptions, NestApplicationOptions {
-}
+export interface INestCreateOptions
+  extends ICreateOptions,
+    NestApplicationOptions {}
 
 export interface IGlobalOptions {
   extraImports?: NonNullable<DynamicModule['imports']>;
@@ -225,5 +226,16 @@ export class AppBootstrap<
 
       callback?.(port, host, domain);
     });
+
+    /**
+     * Hot reload @see https://docs.nestjs.com/recipes/hot-reload#hot-module-replacement-1
+     */
+    const hmr = (module as any).hot;
+    if (hmr) {
+      // eslint-disable-next-line no-console
+      console.debug('Hot reload enabled. Reloading...');
+      hmr.accept();
+      hmr.dispose(() => this.getApp().close());
+    }
   }
 }
