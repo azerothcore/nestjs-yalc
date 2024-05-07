@@ -12,7 +12,7 @@ module.exports = {
     jest: true,
   },
   rules: {
-    'prettier/prettier': ['error', { singleQuote: true }],
+    'prettier/prettier': ['error', { singleQuote: true, trailingComma: 'all' }],
   },
   ignorePatterns: [
     '**/node_modules',
