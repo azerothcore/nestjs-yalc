@@ -11,6 +11,9 @@ module.exports = {
     node: true,
     jest: true,
   },
+  rules: {
+    'prettier/prettier': ['error', { singleQuote: true }],
+  },
   ignorePatterns: [
     '**/node_modules',
     '**/*spec.ts',
@@ -20,8 +23,11 @@ module.exports = {
   ],
   overrides: [
     {
+      files: ['**/*.cjs', '**/*.mjs', '**/*.js'],
+      extends: ['eslint:recommended', 'plugin:prettier/recommended'],
+    },
+    {
       files: ['**/*.ts'],
-      excludedFiles: ['**/test/**'],
       extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',

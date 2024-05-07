@@ -20,17 +20,13 @@
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "debug.javascript.autoAttachFilter": "onlyWithFlag",
-  "jest.showCoverageOnLoad": true,
+  "jest.runMode": "on-demand",
   "jest.jestCommandLine": "npm run test:vscode --",
-  "jest.autoRun": {
-    "watch": false,
-    "onSave": "test-file"
-  },
   "jest.coverageFormatter": "DefaultFormatter",
   "eslint.workingDirectories": [
     {
       "mode": "auto"
     }
   ],
-  "eslint.format.enable": true
+  "eslint.format.enable": true,
 }
