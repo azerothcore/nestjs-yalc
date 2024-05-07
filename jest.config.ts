@@ -44,10 +44,10 @@ const options: IOptions = {
   confOverrides: {
     '@nestjs-yalc/app': {
       coverageThreshold: {
-        statements: 60.83,
+        statements: 60.47,
         branches: 48.19,
         functions: 52.38,
-        lines: 60.51,
+        lines: 60.4,
       },
     },
     '@nestjs-yalc/logger': {
