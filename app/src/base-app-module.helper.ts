@@ -28,12 +28,12 @@ import { NODE_ENV } from '@nestjs-yalc/types/global.enum.js';
 import { ConfigModule, ConfigService, registerAs } from '@nestjs/config';
 import Joi from 'joi';
 import { MODULE_OPTIONS_TOKEN } from '@nestjs/common/cache/cache.module-definition.js';
-import { IGlobalOptions } from './app-bootstrap.helper.js';
 import { EventModule } from '@nestjs-yalc/event-manager/index.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { YalcClsModule } from './cls.module.js';
 import { IYalcControllerStaticInterface } from './yalc-controller.interface.js';
 import _ from 'lodash';
+import { IGlobalOptions } from './app-bootstrap-base.helper.js';
 
 const singletonDynamicModules = new Map<any, any>();
 

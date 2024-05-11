@@ -11,7 +11,15 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { IServiceConf } from './conf.type.js';
 import { SYSTEM_LOGGER_SERVICE } from './def.const.js';
 import { YalcDefaultAppModule } from './base-app-module.helper.js';
-import { ICreateOptions, IGlobalOptions } from './app-bootstrap.helper.js';
+import { ICreateOptions } from './app-bootstrap.helper.js';
+import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
+import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
+
+export interface IGlobalOptions {
+  extraImports?: NonNullable<DynamicModule['imports']>;
+  eventModuleClass?: typeof EventModule;
+  logger?: typeof LoggerServiceFactory;
+}
 
 export abstract class BaseAppBootstrap<
   TAppType extends NestFastifyApplication | INestApplicationContext,
