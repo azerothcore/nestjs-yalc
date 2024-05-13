@@ -30,6 +30,7 @@
     "importHelpers": true,
     "isolatedModules": true,
     "preserveConstEnums": true,
+    "emitDeclarationOnly": true,
     "paths": {
       "@nestjs-yalc/api-strategy": ["./api-strategy/src"],
       "@nestjs-yalc/api-strategy/*": ["./api-strategy/src/*"],
