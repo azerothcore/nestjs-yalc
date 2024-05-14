@@ -13,12 +13,15 @@ export const executeFunctionForApp = async (
   app: INestApplicationContext,
   serviceType: any,
   fn: { (service: any): Promise<any> },
+  options: { closeApp?: boolean },
 ): Promise<void> => {
   await app.init();
 
   const service = await app.resolve(serviceType);
 
-  await fn(service).finally(() => app.close());
+  await fn(service).finally(async () => {
+    if (options.closeApp) await app.close();
+  });
 };
 
 /**

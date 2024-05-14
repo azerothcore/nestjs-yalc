@@ -105,6 +105,7 @@ export class YalcEventService<
    * Alias for log
    */
   emit = this.log;
+  emitAsync = this.logAsync;
 
   @InjectTrace()
   public error<TOpts extends IErrorEventOptions<TFormatter>>(
