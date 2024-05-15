@@ -9,6 +9,31 @@ declare global {
   }
 }
 
+type Impossible<K extends keyof any> = {
+  [P in K]: never;
+};
+
+/**
+ * Remove extra properties from an interface
+ */
+type NoExtraProperties<T, U extends T = T> = U &
+  Impossible<Exclude<keyof U, keyof T>>;
+
+/**
+ * Check if a type A is exactly B
+ */
+type CompareStrict<A, B> = A extends B ? (B extends A ? A : never) : never;
+/**
+ * You can use it to create a type that has exactly the properties of an interface
+ */
+type Exact<T, U extends T> = {
+  [Key in keyof U]: Key extends keyof T
+    ? U[Key] extends object
+      ? Exact<T[Key], U[Key]>
+      : U[Key]
+    : never;
+};
+
 type StaticInterface<
   TClass extends IStaticInterface & {
     new (...args: any[]): TClass;

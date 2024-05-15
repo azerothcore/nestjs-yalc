@@ -15,13 +15,14 @@ import {
 import fastifyCookie from '@fastify/cookie';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { fastify, FastifyInstance } from 'fastify';
-import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
+import { envIsTrue, envToArray } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
 import clc from 'cli-color';
 import {
   BaseAppBootstrap,
   IGlobalOptions,
 } from './app-bootstrap-base.helper.js';
+import { LOG_LEVEL_ALL } from '@nestjs-yalc/logger/logger.enum.js';
 
 export interface ICreateOptions {
   enableSwagger?: boolean;
@@ -111,6 +112,9 @@ export class AppBootstrap<
         {
           bufferLogs: false,
           abortOnError: options?.createOptions?.abortOnError ?? false,
+          logger: process.env.NEST_LOGGER_LEVELS
+            ? envToArray(process.env.NEST_LOGGER_LEVELS)
+            : LOG_LEVEL_ALL,
           ...(options?.createOptions ?? {}),
         },
       );

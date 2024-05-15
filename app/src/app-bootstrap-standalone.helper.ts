@@ -2,13 +2,14 @@ import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 // import { GqlExceptionFilter } from '@nestjs/graphql';
 import { FastifyInstance } from 'fastify';
-import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
+import { envIsTrue, envToArray } from '@nestjs-yalc/utils/env.helper.js';
 import clc from 'cli-color';
 import {
   BaseAppBootstrap,
   IGlobalOptions,
 } from './app-bootstrap-base.helper.js';
 import { INestCreateOptions } from './app-bootstrap.helper.js';
+import { LOG_LEVEL_ALL } from '@nestjs-yalc/logger/logger.enum.js';
 
 export class StandaloneAppBootstrap<
   TGlobalOptions extends IGlobalOptions = IGlobalOptions,
@@ -44,7 +45,11 @@ export class StandaloneAppBootstrap<
   }) {
     let app: INestApplicationContext;
     try {
-      app = await NestFactory.createApplicationContext(this.module);
+      app = await NestFactory.createApplicationContext(this.module, {
+        logger: process.env.NEST_LOGGER_LEVELS
+          ? envToArray(process.env.NEST_LOGGER_LEVELS)
+          : LOG_LEVEL_ALL,
+      });
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(clc.red('Failed to create app'), clc.red(err));
