@@ -79,7 +79,7 @@
     "**/__mocks__",
     "**/*.spec.ts",
     "**/*.test.ts",
-    "var",
+    "var"
   ],
   "ts-node": {
     "transpileOnly": true,
