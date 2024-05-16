@@ -10,7 +10,7 @@ updates:
     schedule:
       interval: "daily"
 groups:
-  minor-and-patch:
+  security-updates:
     applies-to: security-updates
     update-types:
     - "patch"
