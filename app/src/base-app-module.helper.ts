@@ -34,6 +34,7 @@ import { YalcClsModule } from './cls.module.js';
 import { IYalcControllerStaticInterface } from './yalc-controller.interface.js';
 import _ from 'lodash';
 import { IGlobalOptions } from './app-bootstrap-base.helper.js';
+import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -409,6 +410,7 @@ export class YalcDefaultAppModule {
             event: {
               eventEmitter: eventEmitter,
             },
+            overrideLoggerLevels: getEnvLoggerLevels(),
           }).useFactory(configService, eventEmitter);
         },
         inject: [MAIN_APP_CONFIG_SERVICE, EventEmitter2],

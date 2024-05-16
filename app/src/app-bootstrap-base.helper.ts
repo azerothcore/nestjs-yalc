@@ -15,17 +15,12 @@ import { ICreateOptions, INestCreateOptions } from './app-bootstrap.helper.js';
 import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
 import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
 import { FastifyInstance } from 'fastify';
-import { envToArray } from '@nestjs-yalc/utils/env.helper.js';
-import { LOG_LEVEL_ALL } from '@nestjs-yalc/logger/logger.enum.js';
+import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
 
 /**
  * Side effect to be executed as soon as the module is imported
  */
-Logger.overrideLogger(
-  process.env.NEST_LOGGER_LEVELS
-    ? envToArray(process.env.NEST_LOGGER_LEVELS)
-    : LOG_LEVEL_ALL,
-);
+Logger.overrideLogger(getEnvLoggerLevels());
 
 export interface IGlobalOptions {
   extraImports?: NonNullable<DynamicModule['imports']>;
