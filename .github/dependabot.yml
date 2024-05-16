@@ -11,6 +11,8 @@ updates:
       interval: "daily"
 groups:
   security-updates:
-    applies-to: security-updates
+    applies-to: 
+    - security-updates
+    - version-updates
     update-types:
     - "patch"
