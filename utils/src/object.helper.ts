@@ -120,7 +120,7 @@ export function objectsHaveSameKeys(...objects: any[]) {
   return objects.every((object) => union.size === Object.keys(object).length);
 }
 
-let count: number = 1;
+let count: number = 0;
 const idMap: WeakMap<Record<string, unknown> | Array<unknown>, number> =
   new WeakMap<Record<string, unknown> | Array<unknown>, number>();
 /**

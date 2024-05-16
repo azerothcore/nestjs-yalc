@@ -4,6 +4,8 @@ import {
   objectSetProp,
   isObject,
   isObjectStrict,
+  getObjectId,
+  objectsHaveSameKeys
 } from '../object.helper.js';
 
 describe('test object.helper.ts', () => {
@@ -94,5 +96,29 @@ describe('test object.helper.ts', () => {
     expect(isObject(true)).toBe(false);
     expect(isObject(false)).toBe(false);
     expect(isObject([1, 2, 3])).toBe(false);
+  });
+
+
+  it('should getObjectId return the correct id', () => {
+    const obj = { id: 1 };
+    let res = getObjectId(obj);
+    expect(res).toBeGreaterThan(0);
+    // it should give the same result
+    expect(getObjectId(obj)).toBe(res);
+    // different objects instead should give different results
+    expect(getObjectId({ id: 1 })).not.toBe(1);
+  });
+
+
+  it('should objectsHaveSameKeys return true', () => {
+    const obj1 = { test: 1, sub: { test2: 2 } };
+    const obj2 = { test: 1, sub: { test2: 2 } };
+    expect(objectsHaveSameKeys(obj1, obj2)).toBe(true);
+  });
+
+  it('should objectsHaveSameKeys return false', () => {
+    const obj1 = { test: 1, sub: { test2: 2 } };
+    const obj2 = { test: 1, sub2: { test2: 2 } };
+    expect(objectsHaveSameKeys(obj1, obj2)).toBe(false);
   });
 });

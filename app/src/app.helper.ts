@@ -1,5 +1,5 @@
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
-import { DynamicModule, INestApplicationContext } from '@nestjs/common';
+import { DynamicModule, INestApplicationContext, Type } from '@nestjs/common';
 import { StandaloneAppBootstrap } from './app-bootstrap-standalone.helper.js';
 import lodash from 'lodash';
 import { IGlobalOptions } from './app-bootstrap-base.helper.js';
@@ -58,13 +58,15 @@ export const executeStandaloneFunction = async <
   TService,
   TOptions extends IGlobalOptions,
 >(
-  module: DynamicModule,
+  module: DynamicModule | Type<any>,
   serviceType: ClassType<TService>,
   fn: { (service: TService): Promise<any> },
   options?: TOptions,
+  executeOptions: { closeApp?: boolean } = {},
 ) => {
   return (await curriedExecuteStandaloneFunction(module, options))(
     serviceType,
     fn,
+    executeOptions,
   );
 };
