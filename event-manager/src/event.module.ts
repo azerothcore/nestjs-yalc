@@ -1,12 +1,10 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { YalcEventService, IEventServiceOptions } from './event.service.js';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
-import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
-import { ConstructorOptions } from 'eventemitter2';
 import { EventNameFormatter } from './emitter.js';
 import { isProviderObject } from '@nestjs-yalc/utils/nestjs/nest.helper.js';
-import { EventEmitterModuleOptions } from '@nestjs/event-emitter/dist/interfaces/index.js';
 
 export const EVENT_LOGGER = 'EVENT_LOGGER';
 export const EVENT_EMITTER = 'EVENT_EMITTER';
@@ -43,7 +41,7 @@ export interface IEventModuleOptions<
     | ILoggerProviderOptionsObject
     | Provider<ImprovedLoggerService>
     | string;
-  eventEmitter?: EventEmitterModuleOptions | Provider<EventEmitter2>;
+  eventEmitter?: Provider<EventEmitter2>;
   eventService?: (
     logger: ImprovedLoggerService,
     emitter: EventEmitter2,
@@ -125,16 +123,8 @@ export class EventModule {
       });
     }
 
-    if (options?.eventEmitter && isProviderObject(options.eventEmitter)) {
+    if (options?.eventEmitter) {
       providers.push(options.eventEmitter);
-    } else {
-      imports.push(
-        EventEmitterModule.forRoot(
-          options?.eventEmitter
-            ? (options?.eventEmitter as ConstructorOptions)
-            : {},
-        ),
-      );
     }
 
     if (optionProvider) {

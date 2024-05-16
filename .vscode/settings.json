@@ -1,5 +1,4 @@
 {
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   "editor.formatOnSave": true,
   "[typescript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
@@ -23,10 +22,5 @@
   "jest.runMode": "on-demand",
   "jest.jestCommandLine": "npm run test:vscode --",
   "jest.coverageFormatter": "DefaultFormatter",
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ],
   "eslint.format.enable": true,
 }

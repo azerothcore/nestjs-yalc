@@ -1,6 +1,6 @@
 import { ConsoleLogger } from './logger-console.service.js';
 import { PinoLogger } from './logger-pino.service.js';
-import { LogLevel } from '@nestjs/common';
+import { LogLevel, Logger } from '@nestjs/common';
 import { LoggerTypeEnum, LOG_LEVEL_DEFAULT } from './logger.enum.js';
 import { ImprovedNestLogger } from './logger-nest.service.js';
 import type {
@@ -8,6 +8,7 @@ import type {
   ImprovedLoggerService,
 } from './logger-abstract.service.js';
 import _ from 'lodash';
+import { getEnvLoggerLevels } from './logger.helper.js';
 
 export const AppLoggerFactory = _.memoize(
   (
@@ -39,7 +40,14 @@ export const AppLoggerFactory = _.memoize(
         break;
     }
 
-    logger.debug?.(
+    /**
+     * Side effect to be executed as soon as the module is imported
+     */
+    Logger.overrideLogger(getEnvLoggerLevels());
+    /**
+     * We use the system logger here
+     */
+    Logger.debug?.(
       `Use Logger: ${
         loggerType ??
         `not specified, fallback to default (${LoggerTypeEnum.NEST})`

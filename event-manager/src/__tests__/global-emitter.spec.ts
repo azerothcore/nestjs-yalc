@@ -7,6 +7,7 @@ import {
 
 describe('GlobalEmitter', () => {
   it('should return the same instance of the event emitter', () => {
+    setYalcGlobalEventEmitter(undefined);
     const eventEmitter = getYalcGlobalEventEmitter();
     expect(eventEmitter).toBeDefined();
     expect(getYalcGlobalEventEmitter()).toBe(eventEmitter);

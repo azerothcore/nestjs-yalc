@@ -1,7 +1,6 @@
 import { SystemExceptionFilter } from '@nestjs-yalc/errors/filters/index.js';
 import {
   BadRequestException,
-  DynamicModule,
   ExceptionFilter,
   NestApplicationOptions,
   ValidationPipe,
@@ -19,9 +18,11 @@ import { fastify, FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
 import clc from 'cli-color';
-import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
-import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
-import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
+import {
+  BaseAppBootstrap,
+  IGlobalOptions,
+} from './app-bootstrap-base.helper.js';
+import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
 
 export interface ICreateOptions {
   enableSwagger?: boolean;
@@ -36,12 +37,6 @@ export interface ICreateOptions {
 export interface INestCreateOptions
   extends ICreateOptions,
     NestApplicationOptions {}
-
-export interface IGlobalOptions {
-  extraImports?: NonNullable<DynamicModule['imports']>;
-  eventModuleClass?: typeof EventModule;
-  logger?: typeof LoggerServiceFactory;
-}
 
 export class AppBootstrap<
   TGlobalOptions extends IGlobalOptions = IGlobalOptions,
@@ -117,6 +112,7 @@ export class AppBootstrap<
         {
           bufferLogs: false,
           abortOnError: options?.createOptions?.abortOnError ?? false,
+          logger: getEnvLoggerLevels(),
           ...(options?.createOptions ?? {}),
         },
       );

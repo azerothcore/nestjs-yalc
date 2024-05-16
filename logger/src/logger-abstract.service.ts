@@ -73,6 +73,7 @@ export interface IImprovedLoggerOptions {
       }
     | false;
   clsService?: YalcGlobalClsService;
+  overrideLoggerLevels?: LogLevel[];
 }
 
 export abstract class LoggerAbstractService

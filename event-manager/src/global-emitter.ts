@@ -2,9 +2,16 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 let eventEmitter: EventEmitter2;
 
-export const yalcStaticEventEmitter = new EventEmitter2({
-  maxListeners: 1000,
-});
+export const createGlobalEventEmitter = () => {
+  eventEmitter = new EventEmitter2({
+    maxListeners: 1000,
+    wildcard: true,
+  });
+
+  return eventEmitter;
+};
+
+export const yalcStaticEventEmitter = createGlobalEventEmitter();
 
 export function getYalcGlobalEventEmitter() {
   if (!eventEmitter) eventEmitter = yalcStaticEventEmitter;

@@ -4,12 +4,18 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import clc from 'cli-color';
-import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
+import {
+  BaseAppBootstrap,
+  IGlobalOptions,
+} from './app-bootstrap-base.helper.js';
 import { INestCreateOptions } from './app-bootstrap.helper.js';
+import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
 
-export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationContext> {
-  constructor(appAlias: string, module: any) {
-    super(appAlias, module);
+export class StandaloneAppBootstrap<
+  TGlobalOptions extends IGlobalOptions = IGlobalOptions,
+> extends BaseAppBootstrap<INestApplicationContext> {
+  constructor(appAlias: string, module: any, options?: TGlobalOptions) {
+    super(appAlias, module, { globalsOptions: options });
   }
 
   async initApp(options?: {
@@ -39,7 +45,9 @@ export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationCon
   }) {
     let app: INestApplicationContext;
     try {
-      app = await NestFactory.createApplicationContext(this.module);
+      app = await NestFactory.createApplicationContext(this.module, {
+        logger: getEnvLoggerLevels(),
+      });
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(clc.red('Failed to create app'), clc.red(err));

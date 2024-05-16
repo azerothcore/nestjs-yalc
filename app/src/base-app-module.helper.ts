@@ -14,7 +14,7 @@ import {
   SYSTEM_LOGGER_SERVICE,
 } from './def.const.js';
 import { LifeCycleHandler } from './life-cycle-handler.service.js';
-import { DynamicModule, Logger } from '@nestjs/common';
+import { DynamicModule, Global, Logger, Module } from '@nestjs/common';
 import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
 import {
   AppConfigService,
@@ -28,12 +28,13 @@ import { NODE_ENV } from '@nestjs-yalc/types/global.enum.js';
 import { ConfigModule, ConfigService, registerAs } from '@nestjs/config';
 import Joi from 'joi';
 import { MODULE_OPTIONS_TOKEN } from '@nestjs/common/cache/cache.module-definition.js';
-import { IGlobalOptions } from './app-bootstrap.helper.js';
 import { EventModule } from '@nestjs-yalc/event-manager/index.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { YalcClsModule } from './cls.module.js';
 import { IYalcControllerStaticInterface } from './yalc-controller.interface.js';
 import _ from 'lodash';
+import { IGlobalOptions } from './app-bootstrap-base.helper.js';
+import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -201,6 +202,7 @@ export function yalcBaseAppModuleMetadataFactory(
     );
 
     _imports.push(
+      YalcGlobalStaticModule,
       (options?.eventModuleClass ?? EventModule).forRootAsync({
         imports: [module],
         loggerProvider: {
@@ -209,9 +211,8 @@ export function yalcBaseAppModuleMetadataFactory(
         },
         eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
         eventEmitter: {
-          global: true,
-          wildcard: true,
-          maxListeners: 1000,
+          provide: 'INTERNAL_APP_EVENT_EMITTER',
+          useExisting: EventEmitter2,
         },
       }),
       ConfigModule.forRoot({
@@ -350,6 +351,21 @@ export class YalcBaseAppModule {
   }
 }
 
+function yalcGlobalStaticModuleFactory(): Partial<IYalcBaseStaticModule> {
+  return {
+    imports: [
+      EventEmitterModule.forRoot({
+        global: true,
+        maxListeners: 1000,
+        wildcard: true,
+      }),
+    ],
+  };
+}
+@Global()
+@Module(yalcGlobalStaticModuleFactory())
+export class YalcGlobalStaticModule {}
+
 /**
  * This class is used to create true singleton providers
  */
@@ -360,13 +376,13 @@ export class YalcDefaultAppModule {
     options?: IGlobalOptions,
   ) {
     const _imports: NonNullable<DynamicModule['imports']> = [
+      YalcGlobalStaticModule,
       (options?.eventModuleClass ?? EventModule).forRootAsync({
         loggerProvider: {
           provide: 'INTERNAL_SYSTEM_LOGGER_SERVICE',
           useExisting: SYSTEM_LOGGER_SERVICE,
         },
         eventServiceToken: 'INTERNAL_SYSTEM_EVENT_SERVICE',
-        eventEmitter: { wildcard: true, global: true },
       }),
       AppContextModule,
       YalcClsModule,
@@ -394,6 +410,7 @@ export class YalcDefaultAppModule {
             event: {
               eventEmitter: eventEmitter,
             },
+            overrideLoggerLevels: getEnvLoggerLevels(),
           }).useFactory(configService, eventEmitter);
         },
         inject: [MAIN_APP_CONFIG_SERVICE, EventEmitter2],

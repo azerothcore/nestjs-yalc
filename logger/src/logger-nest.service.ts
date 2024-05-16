@@ -31,7 +31,12 @@ export class ImprovedNestLogger
       ...options.config,
     };
 
-    return message + (data ? `\n${JSON.stringify(data, null, 2)}` : '');
+    return (
+      (typeof message === 'string'
+        ? message
+        : JSON.stringify(message, null, 2)) +
+      (data ? `\n${JSON.stringify(data, null, 2)}` : '')
+    );
   }
 
   log(message: any): void;

@@ -80,6 +80,22 @@ describe('EventModule', () => {
     expect(providedLogger).toBeDefined();
   });
 
+  it('should initialize the EventModule with optionProvider', async () => {
+    const loggerProvider = 'Test';
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        EventModule.forRootAsync({ loggerProvider },
+          {
+            provide: OPTION_PROVIDER, useValue:
+              { logger: new ImprovedNestLogger('test', {}), emitter: new EventEmitter2() }),
+        EventEmitterModule.forRoot(),
+      ],
+    }).compile();
+
+    const providedLogger = moduleRef.get<ImprovedLoggerService>(loggerProvider);
+    expect(providedLogger).toBeDefined();
+  });
+
   it('should provide logger from factory if loggerProvider is a provider', async () => {
     const loggerProvider = {
       provide: 'Test',
@@ -96,28 +112,6 @@ describe('EventModule', () => {
       loggerProvider.provide,
     );
     expect(providedLogger).toBeDefined();
-  });
-
-  it('should provide emitter from factory if eventEmitter is an object', async () => {
-    const eventEmitter = { wildcard: true };
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        EventModule.forRootAsync(
-          { eventEmitter },
-          {
-            provide: OPTION_PROVIDER,
-            useValue: {
-              logger: { context: 'Test' },
-              emitter: new EventEmitter2(),
-            },
-          },
-        ),
-        EventEmitterModule.forRoot(),
-      ],
-    }).compile();
-
-    const providedEmitter = moduleRef.get<EventEmitter2>(EventEmitter2);
-    expect(providedEmitter).toBeDefined();
   });
 
   it('should provide emitter from factory if eventEmitter is a provider', async () => {
