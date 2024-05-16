@@ -28,7 +28,6 @@ export const LoggerServiceFactory = (
       options.overrideLoggerLevels ??
       (conf.logContextLevels?.[context] || conf.logLevels || []);
 
-    console.log(context, loggerLevels, loggerType);
     return AppLoggerFactory(context, loggerLevels, loggerType, {
       event:
         options.event !== false
