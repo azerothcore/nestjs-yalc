@@ -1,4 +1,4 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { DynamicModule, LogLevel, Module, Provider } from '@nestjs/common';
 import { YalcEventService, IEventServiceOptions } from './event.service.js';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -18,9 +18,8 @@ function isImprovedLoggerService(
   return (
     loggerProvider !== undefined &&
     typeof loggerProvider === 'object' &&
-    'log' in loggerProvider &&
-    'error' in loggerProvider &&
-    'warn' in loggerProvider
+    'isImprovedLoggerService' in loggerProvider &&
+    loggerProvider.isImprovedLoggerService === true
   );
 }
 
@@ -49,6 +48,7 @@ export interface IEventModuleOptions<
   ) => YalcEventService;
   eventServiceToken?: string;
   imports?: any[];
+  overrideLoggerLevels?: LogLevel[];
 }
 
 export const OPTION_PROVIDER = 'OPTION_PROVIDER';

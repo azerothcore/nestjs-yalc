@@ -80,6 +80,8 @@ export abstract class LoggerAbstractService
   extends WithPluginSystem<ILoggerPluginMethods>()
   implements ImprovedLoggerService
 {
+  public readonly isImprovedLoggerService = true;
+
   /**
    * This constructor override its empty method based on passed
    * logLevels and this.methods

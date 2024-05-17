@@ -13,6 +13,8 @@ export class ImprovedNestLogger
   extends WithPluginSystem<ILoggerPluginMethods>(ConsoleLogger)
   implements ImprovedLoggerService
 {
+  public readonly isImprovedLoggerService = true;
+
   constructor(
     context: string,
     options: ConsoleLoggerOptions,

@@ -21,14 +21,16 @@ export function maskDataInObject(data?: any, paths?: string[], trace?: any) {
   return { ...JSON.parse(redact(data)), trace };
 }
 
+export const getEnvLoggerLevelsByContext = (context: string): LogLevel[] => {
+  return envToArray<LogLevel>(`NEST_LOGGER_LEVELS_${context.toUpperCase()}`);
+};
+
 export const getEnvLoggerLevels = (
   context?: string,
   def: LogLevel[] = LOG_LEVEL_ALL,
 ): LogLevel[] => {
-  let levels = envToArray<LogLevel>(
-    `NEST_LOGGER_LEVELS_${(
-      context ?? LoggerDefContext.NEST_SYSTEM
-    ).toUpperCase()}`,
+  let levels = getEnvLoggerLevelsByContext(
+    context ?? LoggerDefContext.NEST_SYSTEM,
   );
 
   if (!levels.length) levels = envToArray<LogLevel>('NEST_LOGGER_LEVELS');
