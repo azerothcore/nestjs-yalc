@@ -97,6 +97,15 @@ export abstract class LoggerAbstractService
   ) {
     super();
 
+    this.initializeLogger();
+  }
+
+  setLogLevels(levels: LogLevel[]) {
+    this.logLevels = levels;
+    this.initializeLogger();
+  }
+
+  initializeLogger() {
     const enabledLevels: { [key: string]: boolean } = {};
     this.logLevels?.forEach((level) => {
       if (!(level.toUpperCase() in LogLevelEnum))
@@ -155,9 +164,9 @@ export abstract class LoggerAbstractService
       };
   }
 
-  log: LogMethod;
-  error: LogMethodError;
-  warn: LogMethod;
+  log!: LogMethod;
+  error!: LogMethodError;
+  warn!: LogMethod;
   debug?: LogMethod | undefined;
   verbose?: LogMethod;
 
