@@ -13,6 +13,7 @@ import { EventNameFormatter, emitEvent, formatName } from './emitter.js';
 import { ClassType, InstanceType } from '@nestjs-yalc/types/globals.d.js';
 import { getYalcGlobalEventEmitter } from './global-emitter.js';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
+import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 
 interface IEventEmitterOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -76,7 +77,7 @@ export interface IErrorEventOptions<
    * If set to true, the error will be thrown with the default error class.
    * If set to a class, the error will be thrown with the provided class.
    */
-  errorClass?: ClassType<TErrorClass> | boolean;
+  errorClass?: ClassType<TErrorClass> | TErrorClass | boolean;
 }
 
 export interface IErrorEventOptionsRequired<
@@ -180,26 +181,30 @@ export function event<
     const { errorClass: _class, ...rest } = options;
 
     if (_class !== false && _class !== undefined) {
-      let _errorClass: ClassType<DefaultError>;
-      const errorOptions = rest;
-      if (_class === true) {
-        _errorClass = DefaultError;
+      if (isClass(_class) || _class === true) {
+        let _errorClass: ClassType<DefaultError>;
+        const errorOptions = rest;
+        if (_class === true) {
+          _errorClass = DefaultError;
+        } else {
+          _errorClass = _class;
+        }
+
+        /**
+         * We build the message here.
+         */
+        const message = optionalMessage ?? formattedEventName;
+
+        errorInstance = new _errorClass(message, {
+          data: receivedData,
+          eventName: formattedEventName,
+          ...errorOptions,
+          eventEmitter: false,
+          logger: false,
+        }) as ReturnType<TOption>;
       } else {
-        _errorClass = _class;
+        errorInstance = _class as ReturnType<TOption>;
       }
-
-      /**
-       * We build the message here.
-       */
-      const message = optionalMessage ?? formattedEventName;
-
-      errorInstance = new _errorClass(message, {
-        data: receivedData,
-        eventName: formattedEventName,
-        ...errorOptions,
-        eventEmitter: false,
-        logger: false,
-      }) as ReturnType<TOption>;
 
       if (isDefaultErrorMixin(errorInstance)) {
         errorPayload = errorInstance.getEventPayload();

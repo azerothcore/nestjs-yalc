@@ -19,7 +19,10 @@ import {
 import { LogLevelEnum, type ImprovedLoggerService } from '@nestjs-yalc/logger';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventNameFormatter } from './emitter.js';
-import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
+import {
+  DefaultError,
+  errorToDefaultError,
+} from '@nestjs-yalc/errors/default.error.js';
 import {
   BadGatewayError,
   BadRequestError,
@@ -201,6 +204,20 @@ export class YalcEventService<
       getLogLevelByStatus(errorCode),
     );
     return this.error(eventName, mergedOptions);
+  }
+
+  public errorForward(
+    eventName: Parameters<TFormatter> | string,
+    error: Error,
+    options?: TErrorOptions,
+  ): any {
+    const mergedOptions = this.applyLoggerLevelWarn(
+      applyAwaitOption(this.buildErrorOptions(options)),
+    );
+    return this.error(eventName, {
+      ...mergedOptions,
+      errorClass: errorToDefaultError(error),
+    });
   }
 
   /**
