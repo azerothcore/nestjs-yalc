@@ -1,6 +1,6 @@
-import { DateHelper } from "@nestjs-yalc/utils/date.helper.js";
-import { belongsToEnum } from "@nestjs-yalc/utils/enum.helper.js";
-import { ValueTransformer } from "typeorm";
+import { DateHelper } from '@nestjs-yalc/utils/date.helper.js';
+import { belongsToEnum } from '@nestjs-yalc/utils/enum.helper.js';
+import { ValueTransformer } from 'typeorm';
 
 /**
  * Function for transforming the unfitting enum data to null after reading it from the database
@@ -8,7 +8,7 @@ import { ValueTransformer } from "typeorm";
  * @returns ValueTransformer object
  */
 export const enumTransformer = <T extends Record<string, string | number>>(
-  enumName: T
+  enumName: T,
 ): ValueTransformer => {
   const transformer = (value: string | number) => {
     return belongsToEnum(enumName, value) ? value : null;
@@ -16,7 +16,7 @@ export const enumTransformer = <T extends Record<string, string | number>>(
 
   return {
     to: (value) => value, // no transformation for writing
-    from: transformer
+    from: transformer,
   };
 };
 
@@ -31,6 +31,6 @@ export const defaultDateTransformer = () => {
 
   return {
     from: (value: Date) => value,
-    to: transform
+    to: transform,
   };
 };

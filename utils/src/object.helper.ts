@@ -59,7 +59,7 @@ export const deepMerge: IDeepMerge = (
 
       if (isObject(elm)) {
         for (const key in elm) {
-          if (elm.hasOwnProperty(key)) {
+          if (Object.prototype.hasOwnProperty.call(elm, key)) {
             if (isObject(elm[key])) {
               if (!result[key] || !isObject(result[key])) {
                 result[key] = {};
@@ -118,4 +118,24 @@ export function objectsHaveSameKeys(...objects: any[]) {
   );
   const union = new Set(allKeys);
   return objects.every((object) => union.size === Object.keys(object).length);
+}
+
+let count: number = 0;
+const idMap: WeakMap<Record<string, unknown> | Array<unknown>, number> =
+  new WeakMap<Record<string, unknown> | Array<unknown>, number>();
+/**
+ * @description Method to get the object id (unique identifier) of an object
+ */
+export function getObjectId(
+  object: Record<string, unknown> | Array<unknown>,
+): number {
+  const objectId: number | undefined = idMap.get(object);
+  if (objectId === undefined) {
+    count += 1;
+    idMap.set(object, count);
+
+    return count;
+  }
+
+  return objectId;
 }

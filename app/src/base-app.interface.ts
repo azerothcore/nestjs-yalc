@@ -1,3 +1,4 @@
+import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
 import { LoggerServiceFactory } from '@nestjs-yalc/logger/index.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { DynamicModule, ModuleMetadata } from '@nestjs/common';
@@ -37,7 +38,8 @@ export interface IYalcBaseAppOptions extends Partial<ISingletonDynamicModule> {
   envDir?: string;
   migrations?: ClassType[];
   skipDuplicateAppCheck?: boolean;
-  logger?: typeof LoggerServiceFactory;
+  logger?: boolean | typeof LoggerServiceFactory;
+  eventModuleClass?: typeof EventModule;
 }
 
 export type BaseAppStaticOptions = Omit<IYalcBaseAppOptions, 'module'>;

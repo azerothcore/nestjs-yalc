@@ -11,7 +11,7 @@ import { YalcGlobalClsService } from '../../app/src/cls.module.js';
 
 export interface LogMethodOptions {
   /**
-   * The data is the place where you want to add the extra information 
+   * The data is the place where you want to add the extra information
    * that are not returned back as a response but they can be sent to the logger or the event emitter.
    */
   data?: any;
@@ -20,7 +20,7 @@ export interface LogMethodOptions {
    * This might be helpful to filter the logs based on extra configuration values
    * that are not the basic error level, statusCode etc.
    */
-  config?: any; 
+  config?: any;
   masks?: string[];
   context?: string;
   trace?: string;
@@ -73,12 +73,15 @@ export interface IImprovedLoggerOptions {
       }
     | false;
   clsService?: YalcGlobalClsService;
+  overrideLoggerLevels?: LogLevel[];
 }
 
 export abstract class LoggerAbstractService
   extends WithPluginSystem<ILoggerPluginMethods>()
   implements ImprovedLoggerService
 {
+  public readonly isImprovedLoggerService = true;
+
   /**
    * This constructor override its empty method based on passed
    * logLevels and this.methods

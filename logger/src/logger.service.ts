@@ -25,7 +25,8 @@ export const LoggerServiceFactory = (
     const conf = config?.values;
     const loggerType = conf?.loggerType;
     const loggerLevels: LogLevel[] =
-      conf?.logContextLevels?.[context] || conf?.logLevels || [];
+      options.overrideLoggerLevels ??
+      (conf?.logContextLevels?.[context] || conf?.logLevels || []);
 
     return AppLoggerFactory(context, loggerLevels, loggerType, {
       event:

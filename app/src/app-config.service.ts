@@ -40,7 +40,7 @@ export class AppConfigService<T = any> {
 
 export function createAppConfigProvider(appAlias: string): Provider {
   return {
-    provide: `${appAlias}Config`,
+    provide: getAppConfigToken(appAlias),
     useFactory: (config: ConfigService): AppConfigService => {
       return new AppConfigService(config, appAlias);
     },

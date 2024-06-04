@@ -49,19 +49,44 @@ describe('test standalone app functions', () => {
       mockedModule,
       mockedServiceFunction,
       mockedFunction,
+      {},
+      {closeApp: true}
     );
 
     expect(mockedFunction).toHaveBeenCalledTimes(1);
   });
 
-  it('should run curriedExecuteStandaloneFunction', async () => {
+  it('should run executeStandaloneFunction without close app', async () => {
     const mockedFunction = jest.fn(async (service: any) => {
       return service;
     });
 
-    const curried = await curriedExecuteStandaloneFunction(mockedModule);
-    await curried(mockedServiceFunction)(mockedFunction);
+    await executeStandaloneFunction(
+      mockedModule,
+      mockedServiceFunction,
+      mockedFunction,
+      {},
+    );
 
-    expect(mockedFunction).toHaveBeenNthCalledWith(1, 'Test');
+    expect(mockedFunction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should run executeStandaloneFunction with class module', async () => {
+    const mockedFunction = jest.fn(async (service: any) => {
+      return service;
+    });
+
+    class TestModule {
+      constructor() {}
+    }
+
+    await executeStandaloneFunction(
+      TestModule,
+      mockedServiceFunction,
+      mockedFunction,
+      {},
+    );
+
+    expect(mockedFunction).toHaveBeenCalledTimes(1);
   });
 });

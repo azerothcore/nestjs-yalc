@@ -27,7 +27,7 @@ NOTE: you can even implement the `IApiCallStrategy`, the `IEventStrategy` or ext
 The library also provides a wrapper to define the useFactory by passing typed parameters:
 
 
-For the local call
+#### For the local call
 ```typescript
     NestLocalCallStrategyProvider('YOUR_LOCAL_CALL_PROVIDER_ID', {
         NestLocalStrategy: NestLocalCallStrategy,
@@ -35,7 +35,9 @@ For the local call
     })
 ```
 
-For the HTTP calls
+NOTE: You need to import the module containing the controller you are calling via the local-strategy to make it work. It's important to understand that the http call is emulated within the same runtime scope, so you will practically import both modules in the same app (the caller and the receiver).
+
+#### For the HTTP calls
 ```typescript
     NestHttpCallStrategyProvider('YOUR_HTTP_CALL_PROVIDER_ID', {
         NestHttpStrategy: NestHttpCallStrategy,
@@ -43,8 +45,10 @@ For the HTTP calls
     });
 ```
 
+NOTE: You need to import the `HttpModule` from the [nestjs library](https://docs.nestjs.com/techniques/http-module) to make it work
 
-For the event strategy
+
+#### For the event strategy
 ```typescript
     NestLocalEventStrategyProvider('YOUR_LOCAL_EVENT_PROVIDER_ID', {
         NestLocalStrategy: NestLocalEventStrategy,

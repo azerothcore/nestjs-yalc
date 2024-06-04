@@ -33,7 +33,7 @@ export interface IDataInfo {
 export interface IEventPayload {
   message?: string;
   /**
-   * The data is the place where you want to add the extra information 
+   * The data is the place where you want to add the extra information
    * that are not returned back as a response but they can be sent to the logger or the event emitter.
    */
   data?: IDataInfo;
@@ -43,9 +43,9 @@ export interface IEventPayload {
 
 export interface IEventOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
-  > {
+> {
   /**
-   * The data is the place where you want to add the extra information 
+   * The data is the place where you want to add the extra information
    * that are not returned back as a response but they can be sent to the logger or the event emitter.
    */
   data?: any;
@@ -148,7 +148,8 @@ export function event<
   eventName: Parameters<TFormatter> | string,
   options?: TOption,
 ): Promise<ReturnType<TOption>> | ReturnType<TOption> {
-  let { data: receivedData, event, logger, mask, trace, config } = options ?? {};
+  const { data: _data, event, logger, mask, trace, config } = options ?? {};
+  let receivedData = _data;
 
   const formattedEventName = formatName(
     eventName,
@@ -160,7 +161,7 @@ export function event<
   }
 
   if (mask) receivedData = maskDataInObject(receivedData, mask);
-  let data: IDataInfo = { ...receivedData, eventName: formattedEventName };
+  const data: IDataInfo = { ...receivedData, eventName: formattedEventName };
 
   const optionalMessage = options?.logger ? options.message : undefined;
 
@@ -176,7 +177,7 @@ export function event<
 
     if (_class !== false && _class !== undefined) {
       let _errorClass: ClassType<DefaultError>;
-      let errorOptions = rest;
+      const errorOptions = rest;
       if (_class === true) {
         _errorClass = DefaultError;
       } else {
@@ -202,7 +203,7 @@ export function event<
         errorPayload = {
           ...(errorInstance as any),
           data: receivedData,
-          config
+          config,
         };
       }
     }
@@ -250,8 +251,8 @@ export function event<
    */
   let result;
   if (event !== false) {
-    let eventEmitter = event?.emitter ?? getYalcGlobalEventEmitter();
-    let formatter = event?.formatter;
+    const eventEmitter = event?.emitter ?? getYalcGlobalEventEmitter();
+    const formatter = event?.formatter;
 
     const eventPayload: IEventPayload = {
       message: optionalMessage,

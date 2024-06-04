@@ -1,7 +1,6 @@
 import { SystemExceptionFilter } from '@nestjs-yalc/errors/filters/index.js';
 import {
   BadRequestException,
-  DynamicModule,
   ExceptionFilter,
   NestApplicationOptions,
   ValidationPipe,
@@ -19,9 +18,11 @@ import { fastify, FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
 import clc from 'cli-color';
-import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
-import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
-import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
+import {
+  BaseAppBootstrap,
+  IGlobalOptions,
+} from './app-bootstrap-base.helper.js';
+import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
 
 export interface ICreateOptions {
   enableSwagger?: boolean;
@@ -33,14 +34,9 @@ export interface ICreateOptions {
   apiPrefix?: string;
 }
 
-export interface INestCreateOptions extends ICreateOptions, NestApplicationOptions {
-}
-
-export interface IGlobalOptions {
-  extraImports?: NonNullable<DynamicModule['imports']>;
-  eventModuleClass?: typeof EventModule;
-  logger?: typeof LoggerServiceFactory;
-}
+export interface INestCreateOptions
+  extends ICreateOptions,
+    NestApplicationOptions {}
 
 export class AppBootstrap<
   TGlobalOptions extends IGlobalOptions = IGlobalOptions,
@@ -59,7 +55,7 @@ export class AppBootstrap<
     await this.initApp(options);
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
-      await this.getApp().close;
+      await this.getApp().close();
       process.exit(0);
     }
 
@@ -95,7 +91,7 @@ export class AppBootstrap<
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
       this.loggerService?.log('Dry run, exiting...');
-      await this.getApp().close;
+      await this.getApp().close();
       process.exit(0);
     }
 
@@ -116,6 +112,7 @@ export class AppBootstrap<
         {
           bufferLogs: false,
           abortOnError: options?.createOptions?.abortOnError ?? false,
+          logger: getEnvLoggerLevels(),
           ...(options?.createOptions ?? {}),
         },
       );
@@ -227,5 +224,16 @@ export class AppBootstrap<
 
       callback?.(port, host, domain);
     });
+
+    /**
+     * Hot reload @see https://docs.nestjs.com/recipes/hot-reload#hot-module-replacement-1
+     */
+    const hmr = (module as any).hot;
+    if (hmr) {
+      // eslint-disable-next-line no-console
+      console.debug('Hot reload enabled. Reloading...');
+      hmr.accept();
+      hmr.dispose(() => this.getApp().close());
+    }
   }
 }

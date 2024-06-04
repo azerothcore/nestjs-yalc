@@ -26,3 +26,7 @@ export enum LoggerTypeEnum {
   PINO = 'pino',
   NEST = 'nest-logger',
 }
+
+export enum LoggerDefContext {
+  NEST_SYSTEM = 'system',
+}

@@ -148,7 +148,7 @@ export function buildPaginatedDTOInterceptor<T>(
 /**
  * Can be used in combination with the ClassSerializerInterceptor
  */
-export function buildDTOInterceptor<TDto, TSrc extends any>(
+export function buildDTOInterceptor<TDto, TSrc>(
   dto: new (...args: TSrc[]) => TDto,
 ): ClassType<NestInterceptor> {
   @Injectable()

@@ -11,8 +11,23 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { IServiceConf } from './conf.type.js';
 import { SYSTEM_LOGGER_SERVICE } from './def.const.js';
 import { YalcDefaultAppModule } from './base-app-module.helper.js';
-import { ICreateOptions, IGlobalOptions } from './app-bootstrap.helper.js';
+import { ICreateOptions, INestCreateOptions } from './app-bootstrap.helper.js';
 import { getAppConfigToken } from './app-config.service.js';
+import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
+import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
+import { FastifyInstance } from 'fastify';
+import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
+
+/**
+ * Side effect to be executed as soon as the module is imported
+ */
+Logger.overrideLogger(getEnvLoggerLevels());
+
+export interface IGlobalOptions {
+  extraImports?: NonNullable<DynamicModule['imports']>;
+  eventModuleClass?: typeof EventModule;
+  logger?: typeof LoggerServiceFactory;
+}
 
 export abstract class BaseAppBootstrap<
   TAppType extends NestFastifyApplication | INestApplicationContext,
@@ -31,6 +46,14 @@ export abstract class BaseAppBootstrap<
       [appModule, ...(options?.globalsOptions?.extraImports ?? [])],
       options?.globalsOptions,
     );
+  }
+
+  async initApp(options?: {
+    createOptions?: INestCreateOptions;
+    fastifyInstance?: FastifyInstance;
+  }): Promise<this> {
+    options; // extend this method in the child class
+    return this;
   }
 
   setApp(app: TAppType) {

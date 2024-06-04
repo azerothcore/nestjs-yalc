@@ -29,6 +29,7 @@ export class PinoLogger extends LoggerAbstractService {
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              config: options?.config,
               trace: options?.trace,
             },
             message,
@@ -38,6 +39,7 @@ export class PinoLogger extends LoggerAbstractService {
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              config: options?.config,
               trace,
             },
             message,
@@ -47,6 +49,7 @@ export class PinoLogger extends LoggerAbstractService {
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              config: options?.config,
               trace: options?.trace,
             },
             message,
@@ -56,6 +59,7 @@ export class PinoLogger extends LoggerAbstractService {
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              config: options?.config,
               trace: options?.trace,
             },
             message,
@@ -65,6 +69,7 @@ export class PinoLogger extends LoggerAbstractService {
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              config: options?.config,
               trace: options?.trace,
             },
             message,

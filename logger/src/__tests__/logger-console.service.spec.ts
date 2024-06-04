@@ -8,6 +8,7 @@ import {
   afterAll,
   afterEach,
 } from '@jest/globals';
+import { type ConsoleLogger as TConsoleLogger } from '../logger-console.service.js';
 
 /**
  * Not sure why this is needed, but it is. Jest has reference errors when try to import the logger-console.service.js file
@@ -29,7 +30,7 @@ const logOptions = {
 };
 
 describe('Console logger service test', () => {
-  let logger: ConsoleLogger;
+  let logger: TConsoleLogger;
 
   beforeEach(async () => {
     logger = new ConsoleLogger('test', LOG_LEVEL_ALL);

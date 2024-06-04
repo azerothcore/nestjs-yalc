@@ -9,8 +9,8 @@
   },
   "scripts": {
     "ci:checks": "npm run lint && npm run build && npm run test:cov",
-    "build": "tsc --noEmit --project ./tsconfig.json",
-    "build:watch": "tsc-watch --noEmit",
+    "build": "tsc --project ./tsconfig.json",
+    "build:watch": "tsc-watch",
     "lint": "npm run lint:no-fix -- --fix",
     "lint:no-fix": "eslint \"**/src/**/*.ts\" --max-warnings=0",
     "lint:path": "eslint -c .eslintrc.cjs $npm_config_lintpath\"/**/*.ts\" --max-warnings=0",
@@ -87,7 +87,7 @@
     "aws-lambda-fastify": "^2.2.0",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.13.0",
+    "class-validator": "^0.14.1",
     "cli-color": "^2.0.3",
     "commander": "^10.0.0",
     "csurf": "^1.11.0",
@@ -99,7 +99,7 @@
     "joi": "^17.9.2",
     "lodash": "^4.17.21",
     "mobile-detect": "^1.4.5",
-    "mysql2": "^3.1.2",
+    "mysql2": "^3.9.4",
     "node-fetch": "^3.3.0",
     "p-map": "^5.5.0",
     "passport": "^0.6.0",
@@ -108,14 +108,18 @@
     "pino": "^8.10.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
-    "typeorm": "^0.3.12",
-    "typeorm-model-generator": "^0.4.6",
+    "typeorm": "^0.3.14",
     "uuidv4": "^6.2.13"
   },
   "optionalDependencies": {
     "@graphql-tools/wrap": "^9.3.6",
-    "graphql": "^16.6.0",
-    "graphql-type-json": "^0.3.2"
+    "graphql": "^16.8.1",
+    "graphql-type-json": "^0.3.2",
+    "typeorm-model-generator": "^0.4.6"
+  },
+  "overrides": {
+    "mysql2": "^3.9.4",
+    "typeorm": "^0.3.14"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
@@ -130,7 +134,7 @@
     "@types/nestjs-yalc": "./types",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
-    "eslint": "^8.34.0",
+    "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "esm": "^3.2.25",

@@ -10,11 +10,14 @@ import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { InjectOptions } from 'fastify';
 import { YalcGlobalClsService } from '@nestjs-yalc/app/cls.module.js';
 import { filterHeaders } from '../header-whitelist.helper.js';
+import { AppConfigService } from '@nestjs-yalc/app/app-config.service.js';
+import { MAIN_APP_CONFIG_SERVICE } from '@nestjs-yalc/app/def.const.js';
 
 export class NestLocalCallStrategy extends HttpAbstractStrategy {
   constructor(
     protected readonly adapterHost: HttpAdapterHost,
     protected readonly clsService: YalcGlobalClsService,
+    protected readonly configService: AppConfigService,
     private baseUrl = '',
     protected readonly options: IHttpCallStrategyOptions = {},
   ) {
@@ -100,6 +103,7 @@ export const NestLocalCallStrategyProvider = (
   useFactory: (
     httpAdapter: HttpAdapterHost,
     clsService: YalcGlobalClsService,
+    configService: AppConfigService,
   ) => {
     const _options = {
       baseUrl: '',
@@ -110,8 +114,9 @@ export const NestLocalCallStrategyProvider = (
     return new _options.NestLocalStrategy(
       httpAdapter,
       clsService,
+      configService,
       _options.baseUrl,
     );
   },
-  inject: [HttpAdapterHost, YalcGlobalClsService],
+  inject: [HttpAdapterHost, YalcGlobalClsService, MAIN_APP_CONFIG_SERVICE],
 });

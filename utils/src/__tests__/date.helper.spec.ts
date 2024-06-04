@@ -69,4 +69,10 @@ describe('Date helper test suite', () => {
     const result = DateHelper.dateToSQLDateTime(date);
     expect(result).toBe('2003-01-05 20:00:00');
   });
+  
+  it('dateToPlainISO - converts date to plain ISO format', () => {
+    const date = new Date('2003-01-05T20:00:00.000Z');
+    const result = DateHelper.dateToPlainISO(date);
+    expect(result).toBe('20030105T200000000Z');
+  });
 });
