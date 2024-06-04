@@ -322,4 +322,25 @@ describe('Event Service', () => {
     const result = event(systemMessage, _options);
     expect(result).toBeInstanceOf(DefaultError);
   });
+
+  it('should handle events with eventAliases option', async () => {
+    const _options: IEventOptions = {
+      ...options,
+      eventAliases: ['alias1', 'alias2'],
+    };
+    await eventLogAsync(systemMessage, _options);
+    expect(logger.log).toHaveBeenCalledWith(systemMessage, expect.anything());
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+      systemMessage,
+      expect.anything(),
+    );
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+      'alias1',
+      expect.anything(),
+    );
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+      'alias2',
+      expect.anything(),
+    );
+  }
 });

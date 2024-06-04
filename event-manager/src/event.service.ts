@@ -188,7 +188,6 @@ export class YalcEventService<
   /**
    * Use this method to throw an error with arbitrary status code. 500 by default.
    */
-  @InjectTrace()
   public errorHttp(
     eventName: Parameters<TFormatter> | string,
     errorCode: number,

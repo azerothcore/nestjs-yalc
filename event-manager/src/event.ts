@@ -60,6 +60,10 @@ export interface IEventOptions<
   message?: string;
   trace?: string;
   logger?: { instance?: ImprovedLoggerService; level?: LogLevel } | false;
+  /**
+   * This is used to trigger the same event with different names.
+   */
+  eventAliases?: string[];
 }
 
 export interface IErrorEventOptions<
@@ -250,6 +254,7 @@ export function event<
    * We emit the event here unless the event is false
    */
   let result;
+  const toAwait: Promise<any>[] = [];
   if (event !== false) {
     const eventEmitter = event?.emitter ?? getYalcGlobalEventEmitter();
     const formatter = event?.formatter;
@@ -266,9 +271,26 @@ export function event<
       formatter,
       await: event?.await,
     });
+
+    if (options?.eventAliases) {
+      toAwait.push(
+        ...options.eventAliases.map((alias) =>
+          emitEvent<TFormatter>(eventEmitter, alias, eventPayload, {
+            formatter,
+            await: event?.await,
+          }),
+        ),
+      );
+    }
   }
 
-  return errorInstance ?? (result as Promise<ReturnType<TOption>>);
+  return (
+    errorInstance ??
+    (async () => {
+      await Promise.all(toAwait);
+      return result as Promise<ReturnType<TOption>>;
+    })()
+  );
 }
 
 function getLoggerOption(level: LogLevel, options?: IEventOptions) {
