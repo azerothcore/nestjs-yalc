@@ -26,7 +26,7 @@ export const executeFunctionForApp = async (
 };
 
 export interface IStandaloneOptions extends IGlobalOptions {
-  appAlias?: string
+  appAlias?: string;
 }
 
 /**

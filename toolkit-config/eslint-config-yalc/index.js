@@ -1,31 +1,18 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
+  extends: ['eslint:recommended', 'plugin:prettier/recommended'],
   parserOptions: {
     project: 'tsconfig.dev.json',
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
-  extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended",
-    'prettier'
-  ],
   root: true,
   env: {
     node: true,
     jest: true,
   },
   rules: {
-    '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-floating-promises': ['warn'],
-    '@typescript-eslint/no-empty-interface' : 'off',
-    'no-console': 'error',
-    'no-redeclare' : 'off',
-    eqeqeq: 1,
+    'prettier/prettier': ['error', { singleQuote: true, trailingComma: 'all' }],
   },
   ignorePatterns: [
     '**/node_modules',
@@ -33,5 +20,30 @@ module.exports = {
     '**/__tests__',
     '**/__mocks__',
     '**/jest.config.ts',
+    'var',
+  ],
+  overrides: [
+    {
+      files: ['**/*.cjs', '**/*.mjs', '**/*.js'],
+      extends: ['eslint:recommended', 'plugin:prettier/recommended'],
+    },
+    {
+      files: ['**/*.ts'],
+      extends: [
+        'eslint:recommended',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:prettier/recommended',
+      ],
+      rules: {
+        '@typescript-eslint/interface-name-prefix': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-floating-promises': ['warn'],
+        'no-console': 'error',
+        '@typescript-eslint/no-unused-vars': 'off',
+        eqeqeq: 1,
+      },
+    },
   ],
 };

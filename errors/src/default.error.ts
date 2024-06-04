@@ -258,7 +258,6 @@ export const DefaultErrorMixin = <
       const errorCode = this.getStatus();
 
       const causeMessage = `${(this.cause as Error)?.message ?? this.cause}`;
-      
 
       this.internalMessage = options.internalMessage ?? causeMessage;
       this.eventName = options.eventName;

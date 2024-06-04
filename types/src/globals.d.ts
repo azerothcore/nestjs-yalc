@@ -114,9 +114,8 @@ type HTTPMethods =
   | 'OPTIONS'
   | 'options';
 
-
 /**
  * Can be used to solve circular dependencies with types
  * also used as values in the same file
  */
-type TypeRef<T> = T
+type TypeRef<T> = T;

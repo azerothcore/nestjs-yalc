@@ -206,7 +206,7 @@ export class AppBootstrap<
         http://${domain}:${port}${apiPrefix}/
         ${address}`);
 
-      // // eslint-disable-next-line no-console
+      // eslint-disable-next-line no-console
       console.debug(`GraphQL ${this.appAlias} listening on
         http://localhost:${port}${apiPrefix}/graphql
         http://127.0.0.1:${port}${apiPrefix}/graphql

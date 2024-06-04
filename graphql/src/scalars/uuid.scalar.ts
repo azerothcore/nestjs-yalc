@@ -7,19 +7,19 @@ export class UUIDScalar implements CustomScalar<string, string> {
   description = 'UUID Scalar Type';
 
   parseValue(value: unknown): string {
-    if (typeof value !== "string" || !validateUUID(value))
+    if (typeof value !== 'string' || !validateUUID(value))
       throw new UUIDValidationError(formatValueErrorMessage(`${value}`));
     return value;
   }
 
   serialize(value: unknown): string {
-    if (typeof value !== "string" )
+    if (typeof value !== 'string')
       throw new UUIDValidationError(formatValueErrorMessage(`${value}`));
 
     return value;
   }
 
-  parseLiteral(ast: ValueNode): string  {
+  parseLiteral(ast: ValueNode): string {
     if (ast.kind === Kind.STRING) {
       const id = ast.value;
       return this.parseValue(id);

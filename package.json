@@ -26,7 +26,8 @@
     "npm:update:onlylock": "npm update --package-lock-only",
     "npm:outdated": "npm outdated",
     "ncu:interactive": "npx -y npm-check-updates -i",
-    "ncu": "npx -y npm-check-updates -u"
+    "ncu": "npx -y npm-check-updates -u",
+    "postinstall": "npm run npm:update:onlylock --workspace=platform-kit"
   },
   "author": "",
   "license": "MIT",
@@ -132,8 +133,8 @@
     "@types/cli-color": "^2.0.2",
     "@types/lodash": "^4.14.191",
     "@types/nestjs-yalc": "./types",
-    "@typescript-eslint/eslint-plugin": "^7.0.1",
-    "@typescript-eslint/parser": "^7.0.1",
+    "@typescript-eslint/eslint-plugin": "^7.12.0",
+    "@typescript-eslint/parser": "^7.12.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",

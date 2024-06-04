@@ -23,5 +23,18 @@
   "jest.runMode": "on-demand",
   "jest.jestCommandLine": "npm run test:vscode --",
   "jest.coverageFormatter": "DefaultFormatter",
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ],
   "eslint.format.enable": true,
+  "eslint.codeActionsOnSave.mode": "problems",
+  "eslint.enable": true,
+  "eslint.options": {
+    "overrideConfigFile": ".eslintrc.vscode.cjs",
+    "ignore": false
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+  },
 }
