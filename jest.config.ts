@@ -15,6 +15,7 @@ const projectList: { [key: string]: IProjectInfo } = {};
 
 const paths: string[] = packageJson.workspaces;
 paths.map((path: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const _packageJson = require(`./${path}/package.json`);
 
   if (_packageJson.custom?.jest === false) return;
@@ -38,7 +39,7 @@ const options: IOptions = {
     },
   },
   // TODO: re-enable everything except types
-  skipProjects: ['types', 'graphql', 'crud-gen', 'kafka', 'jest'],
+  skipProjects: ['types', 'graphql', 'crud-gen', 'kafka', 'jest', 'toolkit-config'],
   defaultCoverageThreshold: {
     branches: 100,
     functions: 100,

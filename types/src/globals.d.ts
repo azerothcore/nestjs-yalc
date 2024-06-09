@@ -119,3 +119,7 @@ type HTTPMethods =
  * also used as values in the same file
  */
 type TypeRef<T> = T;
+
+type InjectType<T, I> = { [K in keyof T]: T[K] | I };
+
+type Nullable<T> = InjectType<T, null | undefined>;

@@ -6,9 +6,10 @@ import {
   HttpOptions,
   IHttpCallStrategyOptions,
 } from './http-abstract-call.strategy.js';
-import { AxiosRequestConfig } from 'axios';
+import { AxiosHeaders, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { YalcGlobalClsService } from '@nestjs-yalc/app/cls.module.js';
 import { filterHeaders } from '../header-whitelist.helper.js';
+import { OutgoingHttpHeaders } from 'http';
 
 export class NestHttpCallStrategy extends HttpAbstractStrategy {
   constructor(
@@ -23,7 +24,7 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
   async call<TOptData, TParams extends Record<string, any>, TResData>(
     path: string,
     options?: HttpOptions<TOptData, TParams>,
-  ): Promise<IHttpCallStrategyResponse<TResData>> {
+  ): Promise<IHttpCallStrategyResponse<TResData, AxiosResponse['headers']>> {
     const clsHeaders = filterHeaders(
       this.clsService.get('headers'),
       this.options.headersWhitelist,
@@ -51,18 +52,32 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
       _options.params = new URLSearchParams(options.parameters);
     }
 
-    const { data, ...res } = await this.httpService.axiosRef.request({
-      headers: _options?.headers as any,
-      method: _options?.method,
-      signal: _options?.signal,
-      data: _options?.data,
-      params: _options?.params,
-      url: `${this.baseUrl}${path}`,
-    });
+    const { headers: axiosHeaders, ...res } =
+      await this.httpService.axiosRef.request({
+        headers: _options?.headers as any,
+        method: _options?.method,
+        signal: _options?.signal,
+        data: _options?.data,
+        params: _options?.params,
+        url: `${this.baseUrl}${path}`,
+      });
+
+    const outgoingHeaders = Object.entries(axiosHeaders).reduce(
+      (acc, [k, v]) => {
+        if (v instanceof AxiosHeaders) {
+          v = v.toJSON();
+        }
+
+        acc[k] = v;
+        return acc;
+      },
+      {} as OutgoingHttpHeaders,
+    );
 
     return {
       ...res,
-      data,
+      headers: outgoingHeaders,
+      rawHeaders: axiosHeaders,
     };
   }
 }

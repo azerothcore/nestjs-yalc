@@ -7,15 +7,6 @@
     "tsConfigPath": "!!!!!!!!!!!please-specify-a-valid-project-name!!!!!!!!!!!"
   },
   "projects": {
-    "user": {
-      "type": "application",
-      "root": "apps/user",
-      "entryFile": "main.cjs",
-      "sourceRoot": "apps/user/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/user/tsconfig.app.json"
-      }
-    },
     "platform": {
       "type": "application",
       "root": "apps/_srv/platform",
@@ -23,6 +14,15 @@
       "sourceRoot": "apps/_srv/platform/src",
       "compilerOptions": {
         "tsConfigPath": "apps/_srv/platform/tsconfig.app.json"
+      }
+    },
+    "user": {
+      "type": "application",
+      "root": "apps/user",
+      "entryFile": "main.cjs",
+      "sourceRoot": "apps/user/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user/tsconfig.app.json"
       }
     }
   }

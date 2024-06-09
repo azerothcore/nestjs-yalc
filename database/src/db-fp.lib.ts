@@ -2,14 +2,14 @@ import { MigrationOptions, MigrationSelection } from '@nestjs-yalc/database';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { AppConfigService } from '@nestjs-yalc/app/app-config.service.js';
 import {
+  IExecutionOption,
   curriedExecuteAppFunction,
-  curriedExecuteStandaloneFunction,
+  curriedExecuteStandaloneAppFunction,
 } from '@nestjs-yalc/app/app.helper.js';
-import { IServiceWithTypeORMConf } from '@nestjs-yalc/app/conf.type.js';
 import { IDbService, IDbRunnerService } from './db-cli.helper';
 
 export function addEnvPayloadForMigrationOptions(
-  configService: AppConfigService<IServiceWithTypeORMConf>,
+  configService: AppConfigService<any>,
   options?: MigrationOptions,
 ): MigrationOptions {
   if (!options?.selMigrations) {
@@ -17,7 +17,7 @@ export function addEnvPayloadForMigrationOptions(
     // if both are undefined, the migration will execute all of them
     return {
       ...options,
-      selMigrations: configService.values.migrationPayload,
+      selMigrations: configService.get().migrationPayload,
     };
   }
 
@@ -38,21 +38,43 @@ export async function executeStandaloneDbMigrations(
   appAlias: string,
   appModule: any,
   service: ClassType<IDbService | IDbRunnerService>,
-  options: { migrations?: MigrationSelection; dropDb?: boolean },
+  options: {
+    migrations?: MigrationSelection;
+    dropDb?: boolean;
+  } & IExecutionOption,
 ) {
   if (options?.dropDb) {
-    await executeStandaloneDbDrop(appAlias, appModule, service);
+    await executeStandaloneDbDrop(appAlias, appModule, service, {
+      ...options,
+      appOptions: {
+        ...(options.appOptions ?? {}),
+        isDirectExecution: true,
+      },
+      closeApp: true,
+    });
   }
 
   const executeStandaloneFunction = await executeStandaloneDbCreation(
     appAlias,
     appModule,
     service,
+    {
+      ...options,
+      dropDb: false,
+      closeApp: true,
+    },
   );
 
-  await executeStandaloneFunction(service, async (service: IDbService) => {
-    await service.migrate({ selMigrations: options.migrations });
-  });
+  await executeStandaloneFunction(
+    service,
+    async (service: IDbService) => {
+      await service.migrate({ selMigrations: options.migrations });
+    },
+    {
+      closeApp: true,
+      ...options,
+    },
+  );
 
   return executeStandaloneFunction;
 }
@@ -63,22 +85,34 @@ export async function executeStandaloneDbSeed(
   service: ClassType<IDbService | IDbRunnerService>,
   options: {
     dropDb?: boolean;
-  },
+    runMigrations?: boolean;
+  } & IExecutionOption,
 ) {
-  if (options?.dropDb) {
-    await executeStandaloneDbDrop(appAlias, appModule, service);
+  let executeStandaloneFunction;
+  if (options?.runMigrations === false ?? true) {
+    executeStandaloneFunction = await curriedExecuteStandaloneAppFunction(
+      appAlias,
+      appModule,
+    );
+  } else {
+    executeStandaloneFunction = await executeStandaloneDbMigrations(
+      appAlias,
+      appModule,
+      service,
+      {
+        ...options,
+        closeApp: true,
+      },
+    );
   }
 
-  const executeStandaloneFunction = await executeStandaloneDbMigrations(
-    appAlias,
-    appModule,
+  await executeStandaloneFunction(
     service,
-    {},
+    async (service: IDbService) => {
+      await service.seed();
+    },
+    { closeApp: true, ...options },
   );
-
-  await executeStandaloneFunction(service, async (service: IDbService) => {
-    await service.seed();
-  });
 
   return executeStandaloneFunction;
 }
@@ -87,17 +121,38 @@ export async function executeStandaloneDbCreation(
   appAlias: string,
   appModule: any,
   service: ClassType<IDbService | IDbRunnerService>,
+  options?: {
+    dropDb?: boolean;
+  } & IExecutionOption,
 ) {
   // we neet a schemaless connection while creating the schema
   process.env.TYPEORM_NO_SEL_DB = 'true';
-  const executeStandaloneFunction = await curriedExecuteStandaloneFunction(
-    appModule,
+  const executeStandaloneFunction = await curriedExecuteStandaloneAppFunction(
     appAlias,
+    appModule,
+    options,
   );
 
-  await executeStandaloneFunction(service, async (service: IDbService) => {
-    await service.create();
-  });
+  if (options?.dropDb) {
+    await executeStandaloneFunction(
+      service,
+      async (service: IDbService) => {
+        await service.drop();
+      },
+      { closeApp: true, ...options },
+    );
+  }
+
+  await executeStandaloneFunction(
+    service,
+    async (service: IDbService) => {
+      await service.create();
+    },
+    {
+      closeApp: true,
+      ...options,
+    },
+  );
   process.env.TYPEORM_NO_SEL_DB = 'false';
 
   return executeStandaloneFunction;
@@ -107,17 +162,23 @@ export async function executeStandaloneDbDrop(
   appAlias: string,
   appModule: any,
   service: ClassType<IDbService | IDbRunnerService>,
+  options?: IExecutionOption,
 ) {
   // we neet a schemaless connection while creating the schema
   process.env.TYPEORM_NO_SEL_DB = 'true';
-  const executeStandaloneFunction = await curriedExecuteStandaloneFunction(
-    appModule,
+  const executeStandaloneFunction = await curriedExecuteStandaloneAppFunction(
     appAlias,
+    appModule,
+    options,
   );
 
-  await executeStandaloneFunction(service, async (service: IDbService) => {
-    await service.drop();
-  });
+  await executeStandaloneFunction(
+    service,
+    async (service: IDbService) => {
+      await service.drop();
+    },
+    { closeApp: true, ...options },
+  );
   process.env.TYPEORM_NO_SEL_DB = 'false';
 
   return executeStandaloneFunction;
@@ -137,17 +198,22 @@ export async function executeAppDbMigrations(
   appAlias: string,
   appModule: any,
   service: ClassType<IDbService | IDbRunnerService>,
-  options: { migrations?: MigrationSelection },
+  options: { migrations?: MigrationSelection } & IExecutionOption,
 ) {
   const executeAppFunction = await executeAppDbCreation(
     appAlias,
     appModule,
     service,
+    { ...options, closeApp: true },
   );
 
-  await executeAppFunction(service, async (service: IDbService) => {
-    await service.migrate({ selMigrations: options.migrations });
-  });
+  await executeAppFunction(
+    service,
+    async (service: IDbService) => {
+      await service.migrate({ selMigrations: options.migrations });
+    },
+    { closeApp: true, ...options },
+  );
 
   return executeAppFunction;
 }
@@ -158,22 +224,40 @@ export async function executeAppDbSeed(
   service: ClassType<IDbService | IDbRunnerService>,
   options: {
     dropDb?: boolean;
-  },
+    runMigrations?: boolean;
+  } & IExecutionOption,
 ) {
+  let executeAppFunction;
   if (options?.dropDb) {
-    await executeAppDbDrop(appAlias, appModule, service);
+    executeAppFunction = await executeAppDbDrop(appAlias, appModule, service, {
+      closeApp: true,
+    });
   }
 
-  const executeAppFunction = await executeAppDbMigrations(
-    appAlias,
-    appModule,
-    service,
-    {},
-  );
+  if (options?.runMigrations) {
+    executeAppFunction = await executeAppDbMigrations(
+      appAlias,
+      appModule,
+      service,
+      { ...options, closeApp: false },
+    );
+  }
 
-  await executeAppFunction(service, async (service: IDbService) => {
-    await service.seed();
-  });
+  if (!executeAppFunction) {
+    executeAppFunction = await curriedExecuteAppFunction(
+      appAlias,
+      appModule,
+      options,
+    );
+  }
+
+  await executeAppFunction(
+    service,
+    async (service: IDbService) => {
+      await service.seed();
+    },
+    { closeApp: true, ...options },
+  );
 
   return executeAppFunction;
 }
@@ -182,17 +266,23 @@ export async function executeAppDbCreation(
   appAlias: string,
   appModule: any,
   service: ClassType<IDbService | IDbRunnerService>,
+  options?: IExecutionOption,
 ) {
   // we neet a schemaless connection while creating the schema
   process.env.TYPEORM_NO_SEL_DB = 'true';
   const executeAppFunction = await curriedExecuteAppFunction(
     appAlias,
     appModule,
+    options,
   );
 
-  await executeAppFunction(service, async (service: IDbService) => {
-    await service.create();
-  });
+  await executeAppFunction(
+    service,
+    async (service: IDbService) => {
+      await service.create();
+    },
+    { closeApp: true, ...options },
+  );
   process.env.TYPEORM_NO_SEL_DB = 'false';
 
   return executeAppFunction;
@@ -202,14 +292,23 @@ export async function executeAppDbDrop(
   appAlias: string,
   appModule: any,
   service: ClassType<IDbService | IDbRunnerService>,
+  options?: IExecutionOption,
 ) {
   // we neet a schemaless connection while creating the schema
   process.env.TYPEORM_NO_SEL_DB = 'true';
-  const executeFunction = await curriedExecuteAppFunction(appAlias, appModule);
+  const executeFunction = await curriedExecuteAppFunction(
+    appAlias,
+    appModule,
+    options,
+  );
 
-  await executeFunction(service, async (service: IDbService) => {
-    await service.drop();
-  });
+  await executeFunction(
+    service,
+    async (service: IDbService) => {
+      await service.drop();
+    },
+    { closeApp: true, ...options },
+  );
   process.env.TYPEORM_NO_SEL_DB = 'false';
 
   return executeFunction;

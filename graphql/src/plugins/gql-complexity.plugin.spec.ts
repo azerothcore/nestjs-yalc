@@ -1,7 +1,6 @@
 import { GqlComplexityPlugin } from './gql-complexity.plugin.js';
 import { GqlComplexityHelper } from './gql-complexity.helper.js';
 
-jest.mock('apollo-server-plugin-base');
 jest.mock('./gql-complexity.helper');
 
 describe('GqlComplexityPlugin', () => {

@@ -10,6 +10,18 @@ export function isDynamicModule(module: any): module is DynamicModule {
   return module.module !== undefined;
 }
 
+export interface IAppBuilderOptions extends IGlobalOptions {
+  /**
+   * This enables/disables special features for standalone apps
+   */
+  isDirectExecution?: boolean;
+}
+
+export interface IExecutionOption {
+  appOptions?: IAppBuilderOptions;
+  closeApp?: boolean;
+}
+
 export const executeFunctionForApp = async (
   app: INestApplicationContext,
   serviceType: any,
@@ -53,22 +65,44 @@ export const curriedExecuteStandaloneFunction = async <
     ).getApp(),
   );
 
-export const curriedExecuteAppFunction = async <
-  TOptions extends IStandaloneOptions,
->(
+export const curriedExecuteStandaloneAppFunction = async (
+  appAlias: string,
   module: any,
-  options?: TOptions,
+  options?: IExecutionOption,
 ) =>
   curry(executeFunctionForApp)(
     (
-      await new AppBootstrap(
-        options?.appAlias ??
+      await new StandaloneAppBootstrap(
+        appAlias ??
           (isDynamicModule(module) ? module.module.name : module.name),
         module,
-        options,
+        {
+          ...options?.appOptions,
+          isDirectExecution: true,
+        },
       ).initApp()
     ).getApp(),
   );
+
+export const curriedExecuteAppFunction = async (
+  appAlias: string,
+  module: any,
+  options?: IExecutionOption,
+) => {
+  return curry(executeFunctionForApp)(
+    (
+      await new AppBootstrap(
+        appAlias ??
+          (isDynamicModule(module) ? module.module.name : module.name),
+        module,
+        {
+          ...options?.appOptions,
+          isDirectExecution: true,
+        },
+      ).initApp()
+    ).getApp(),
+  );
+};
 
 /**
  *

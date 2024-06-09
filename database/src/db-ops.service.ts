@@ -8,8 +8,6 @@ import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOpti
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { getSchemNameFromDatasource } from './typeorm.helpers.js';
 
-type IConnectionOptions = ConnOptions.default;
-
 type TDbConnection = { conn: DataSource; dbName: string };
 
 /**

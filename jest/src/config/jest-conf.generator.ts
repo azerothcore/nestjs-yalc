@@ -13,13 +13,13 @@ import defaultConf, {
   tsJestConfigE2E,
 } from './jest-def.config';
 // import { options as jestOptionObject } from 'jest-cli/build/cli/args';
-import _yargs from 'yargs';
-const yargs = _yargs.default;
+import yargs from 'yargs';
 
 interface IAppDep {
   name: string;
   path: string;
 }
+
 export interface IAppProjSetting {
   confOverride?: any;
   deps: IAppDep[];
