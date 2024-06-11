@@ -1,6 +1,6 @@
 import { IServiceWithTypeORMConf } from '@nestjs-yalc/app/conf.type.js';
 import { yalcBaseConfigFactoryWithTypeOrm } from '@nestjs-yalc/app/config-factory.helper.js';
-import { APP_ALIAS_USER } from '../user.def';
+import { APP_ALIAS_USER } from '../user.def.ts';
 
 export const ConfFactory = async (): Promise<IServiceWithTypeORMConf> => {
   return yalcBaseConfigFactoryWithTypeOrm({

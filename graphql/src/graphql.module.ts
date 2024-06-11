@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UUIDScalar } from './scalars/uuid.scalar';
+import { UUIDScalar } from './scalars/uuid.scalar.ts';
 import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
 

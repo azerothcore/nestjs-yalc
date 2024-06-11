@@ -1,9 +1,9 @@
 import { AppConfigService } from '@nestjs-yalc/app/app-config.service.js';
 import { APP_EVENT_SERVICE } from '@nestjs-yalc/app/def.const.js';
 import { Injectable, Inject } from '@nestjs/common';
-import { DbOpsService } from '.';
-import { addEnvPayloadForMigrationOptions } from './db-fp.lib';
-import { DbMigrateService, MigrationOptions } from './db-migrate.service';
+import { DbOpsService } from './index.ts';
+import { addEnvPayloadForMigrationOptions } from './db-fp.lib.ts';
+import { DbMigrateService, MigrationOptions } from './db-migrate.service.ts';
 import { IServiceWithTypeORMConf } from '@nestjs-yalc/app/conf.type.js';
 import { YalcEventService } from '@nestjs-yalc/event-manager';
 

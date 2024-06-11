@@ -1,7 +1,7 @@
 import { Module, ModuleMetadata, Type } from '@nestjs/common';
 import { yalcBaseAppModuleMetadataFactory } from '@nestjs-yalc/app/base-app-module.helper.ts';
 import { YalcAppUserApiModule } from '@nestjs-yalc/pk-app-user/app-user-api.module.ts';
-import { ConfFactory } from './config/config';
+import { ConfFactory } from './config/config.ts';
 import path from 'path';
 import { ___dirname } from '@nestjs-yalc/utils';
 

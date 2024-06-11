@@ -4,7 +4,7 @@ import {
   IConfWithTypeORMFactoryOptions,
   IServiceConf,
   IServiceWithTypeORMConf,
-} from './conf.type';
+} from './conf.type.ts';
 import { LogLevel } from '@nestjs/common';
 import { envIsTrue, envToArray } from '@nestjs-yalc/utils';
 import { LOG_LEVEL_DEFAULT, LoggerTypeEnum } from '@nestjs-yalc/logger';

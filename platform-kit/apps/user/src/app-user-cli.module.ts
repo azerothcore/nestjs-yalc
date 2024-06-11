@@ -4,9 +4,12 @@ import {
   DbOpsServiceFactory,
   setGlobalMigrationClasses,
 } from '@nestjs-yalc/database';
-import { APP_ALIAS_USER_CLI, TYPEORM_USER_CONNECTION_TOKEN } from './user.def';
-import { YalcUserModule } from '.';
-import { ConfFactory } from './config/config';
+import {
+  APP_ALIAS_USER_CLI,
+  TYPEORM_USER_CONNECTION_TOKEN,
+} from './user.def.ts';
+import { YalcUserModule } from './index.ts';
+import { ConfFactory } from './config/config.ts';
 import {
   YalcBaseAppModule,
   yalcBaseAppModuleMetadataFactory,

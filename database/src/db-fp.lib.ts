@@ -6,7 +6,7 @@ import {
   curriedExecuteAppFunction,
   curriedExecuteStandaloneAppFunction,
 } from '@nestjs-yalc/app/app.helper.js';
-import { IDbService, IDbRunnerService } from './db-cli.helper';
+import { IDbService, IDbRunnerService } from './db-cli.helper.ts';
 
 export function addEnvPayloadForMigrationOptions(
   configService: AppConfigService<any>,

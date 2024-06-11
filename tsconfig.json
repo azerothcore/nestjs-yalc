@@ -1,10 +1,12 @@
 {
   "extends": "./toolkit-config/typescript/tsconfig.json",
   "compilerOptions": {
-        "composite": true,
-    "outDir": "var/dist"
+    "composite": true,
+    "outDir": "./var/dist"
   },
-  "include": ["./**/src/**/*.ts"],
+  "include": [
+    "./**/src/**/*.ts"
+  ],
   "exclude": [
     "**/node_modules",
     "kafka",
