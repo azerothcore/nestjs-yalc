@@ -190,6 +190,7 @@ describe('YalcEventService', () => {
       return Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
         (methodName) =>
           methodName.startsWith('error') &&
+          methodName !== 'errorForward' && // error forward is tested separately
           typeof instance[methodName] === 'function',
       );
     }
@@ -205,6 +206,16 @@ describe('YalcEventService', () => {
         expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
       },
     );
+
+    it('should call eventError with correct parameters for errorForward', () => {
+      service.errorForward('testEvent', new Error());
+      expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
+    });
+
+    it('should call eventError with correct parameters for errorForward with DefaultError', () => {
+      service.errorForward('testEvent', new DefaultError());
+      expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
+    });
   });
 
   describe('warn', () => {

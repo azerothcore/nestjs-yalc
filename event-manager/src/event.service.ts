@@ -63,7 +63,7 @@ function InjectTrace() {
 
     descriptor.value = function (...args: any[]) {
       // Assuming the options object is the second argument (index 1)
-      let options = args[1];
+      let options: IErrorEventOptions = args[1] as IErrorEventOptions;
 
       // Ensure options is an object, and set the trace if not present
       if (typeof options !== 'object' || options === null) {
@@ -72,7 +72,7 @@ function InjectTrace() {
       }
 
       // Set trace if it's not already set
-      if (!options.trace) {
+      if (!options.trace && !(options.errorClass as DefaultError)?.stack) {
         options.trace = new Error().stack;
       }
 
@@ -208,7 +208,7 @@ export class YalcEventService<
 
   public errorForward(
     eventName: Parameters<TFormatter> | string,
-    error: Error,
+    error: Error | DefaultError,
     options?: TErrorOptions,
   ): any {
     const mergedOptions = this.applyLoggerLevelWarn(
@@ -534,8 +534,6 @@ export class YalcEventService<
     defaultClass: ClassType<TErrorClass> | boolean = true,
   ): IErrorEventOptionsRequired<TFormatter, TErrorClass> {
     options.errorClass ??= defaultClass;
-    return this.buildOptions<
-      IErrorEventOptionsRequired<TFormatter, TErrorClass>
-    >(options as IErrorEventOptionsRequired<TFormatter, TErrorClass>);
+    return options as IErrorEventOptionsRequired<TFormatter, TErrorClass>;
   }
 }

@@ -450,7 +450,7 @@ export class DefaultError extends DefaultErrorBase(HttpException) {
 }
 
 export const errorToDefaultError = (
-  error: Error | HttpException,
+  error: Error | HttpException | DefaultError,
   options: IDefaultErrorOptions = {},
 ) => {
   if (isDefaultErrorMixin(error)) {

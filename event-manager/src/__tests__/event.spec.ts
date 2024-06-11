@@ -301,7 +301,7 @@ describe('Event Service', () => {
     expect(result).toBeInstanceOf(Error);
   });
 
-  it('should handle error with class (should not happen)', () => {
+  it('should handle error with class non DefaultError class (should not happen)', () => {
     class CustomError extends HttpException {}
     const _options: IErrorEventOptions = {
       ...options,
@@ -317,6 +317,16 @@ describe('Event Service', () => {
     const _options: IErrorEventOptions = {
       ...options,
       errorClass: true,
+      message,
+    };
+    const result = event(systemMessage, _options);
+    expect(result).toBeInstanceOf(DefaultError);
+  });
+
+  it('should handle error with class instance', async () => {
+    const _options: IErrorEventOptions = {
+      ...options,
+      errorClass: new DefaultError(),
       message,
     };
     const result = event(systemMessage, _options);

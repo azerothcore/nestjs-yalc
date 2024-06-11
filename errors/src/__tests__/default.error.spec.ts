@@ -6,6 +6,7 @@ import {
   newDefaultError,
   isDefaultErrorMixin,
   DefaultErrorBase,
+  errorToDefaultError,
 } from '../default.error.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import EventEmitter from 'events';
@@ -208,6 +209,26 @@ describe('DefaultError', () => {
       });
       expect(check.cause).toBeDefined();
       expect(check.getEventPayload().cause?.parentCause).toBeDefined();
+    });
+  });
+
+  describe('errorToDefaultError', () => {
+    it('should convert an error to a DefaultError', () => {
+      const error = new Error('test');
+      const defaultError = errorToDefaultError(error);
+      expect(defaultError).toBeInstanceOf(DefaultError);
+    });
+
+    it('should convert an HttpException to a DefaultError', () => {
+      const error = new HttpException('test', 500);
+      const defaultError = errorToDefaultError(error);
+      expect(defaultError).toBeInstanceOf(DefaultError);
+    });
+
+    it('should keep a DefaultError as a DefaultError', () => {
+      const error = new DefaultError('test');
+      const defaultError = errorToDefaultError(error);
+      expect(defaultError).toBeInstanceOf(DefaultError);
     });
   });
 });
