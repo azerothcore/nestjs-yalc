@@ -5,7 +5,8 @@ import {
   isObject,
   isObjectStrict,
   getObjectId,
-  objectsHaveSameKeys
+  objectsHaveSameKeys,
+  deepMergeWithoutArrayConcat
 } from '../object.helper.js';
 
 describe('test object.helper.ts', () => {
@@ -57,6 +58,48 @@ describe('test object.helper.ts', () => {
       test: 1,
       sub: {
         test2: 2,
+      },
+    });
+  });
+
+  it('should merge objects  correctly with array concat', () => {
+    const obj1 = { test: 1, sub: { test2: ['1', '2'] } };
+    const obj2 = { test: 2, sub: { test2: ['3','2'] } };
+
+    const res = deepMerge(obj1,obj2);
+
+    expect(res).toStrictEqual({
+      test: 2,
+      sub: {
+        test2: ['1', '2', '3'],
+      },
+    });
+  });
+
+  it('should merge objects  correctly without array concat', () => {
+    const obj1 = { test: 1, sub: { test2: ['1', '2'] } };
+    const obj2 = { test: 2, sub: { test2: ['3','2'] } };
+
+    const res = deepMergeWithoutArrayConcat(obj1,obj2);
+
+    expect(res).toStrictEqual({
+      test: 2,
+      sub: {
+        test2: ['3', '2'],
+      },
+    });
+  });
+
+  it('should merge objects  correctly with functions', () => {
+    const obj1 = { test: 1};
+    const obj2 = { test: 2, sub: { test2: () => {} } };
+
+    const res = deepMerge(obj1,obj2);
+
+    expect(res).toStrictEqual({
+      test: 2,
+      sub: {
+        test2: expect.any(Function),
       },
     });
   });

@@ -36,11 +36,13 @@ export function isObjectStrict(val: any): val is Record<string, any> {
 
 /**
  * @description Method to perform a deep merge of objects
- * @param {Object} target - The targeted object that needs to be merged with the supplied @sources
- * @param {Array<Object>} sources - The source(s) that will be used to update the @target object
- * @return {Object} The final merged object
+ * @param isArrayConcat - Whether or not to concatenate arrays
+ * @param target - The targeted object that needs to be merged with the supplied @sources
+ * @param sources - The source(s) that will be used to update the @target object
+ * @return The final merged object
  */
-export const deepMerge: IDeepMerge = (
+export const _deepMerge = (
+  isArrayConcat: boolean,
   target: IObject,
   ...sources: Array<IObject>
 ): IObject => {
@@ -60,13 +62,17 @@ export const deepMerge: IDeepMerge = (
       if (isObject(elm)) {
         for (const key in elm) {
           if (Object.prototype.hasOwnProperty.call(elm, key)) {
-            if (isObject(elm[key])) {
+            if (isObject(elm[key]) && typeof elm[key] !== 'function') {
               if (!result[key] || !isObject(result[key])) {
                 result[key] = {};
               }
-              deepMerge(result[key], elm[key]);
+              _deepMerge(isArrayConcat, result[key], elm[key]);
             } else {
-              if (Array.isArray(result[key]) && Array.isArray(elm[key])) {
+              if (
+                isArrayConcat &&
+                Array.isArray(result[key]) &&
+                Array.isArray(elm[key])
+              ) {
                 // concatenate the two arrays and remove any duplicate primitive values
                 result[key] = Array.from(new Set(result[key].concat(elm[key])));
               } else {
@@ -80,6 +86,32 @@ export const deepMerge: IDeepMerge = (
   }
 
   return result;
+};
+
+/**
+ * @description Method to perform a deep merge of objects
+ * @param target - The targeted object that needs to be merged with the supplied @sources
+ * @param sources - The source(s) that will be used to update the @target object
+ * @returns The final merged object
+ */
+export const deepMerge: IDeepMerge = (
+  target: IObject,
+  ...sources: Array<IObject>
+): IObject => {
+  return _deepMerge(true, target, ...sources);
+};
+
+/**
+ * @description Method to perform a deep merge of objects without concatenating arrays
+ * @param target - The targeted object that needs to be merged with the supplied @sources
+ * @param sources - The source(s) that will be used to update the @target object
+ * @returns The final merged object
+ */
+export const deepMergeWithoutArrayConcat: IDeepMerge = (
+  target: IObject,
+  ...sources: Array<IObject>
+): IObject => {
+  return _deepMerge(false, target, ...sources);
 };
 
 /**
