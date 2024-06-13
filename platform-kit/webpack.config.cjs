@@ -493,7 +493,7 @@ module.exports = (nestJsOptions) => {
             name: 'vendors',
             filename: `opt/vendors/modules.js`,
             chunks: 'all',
-            // enforce: true,
+            enforce: isProd,
             reuseExistingChunk: true,
           },
           // libs: {
