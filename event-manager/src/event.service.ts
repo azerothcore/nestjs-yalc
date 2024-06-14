@@ -12,14 +12,19 @@ import {
   eventVerbose,
   eventWarn,
   applyAwaitOption,
-  IErrorEventOptions,
+  type IErrorEventOptions,
   isErrorOptions,
-  IErrorEventOptionsRequired,
+  type IErrorEventOptionsRequired,
+  resolveLoggerOption,
 } from './event.js';
 import { LogLevelEnum, type ImprovedLoggerService } from '@nestjs-yalc/logger';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventNameFormatter } from './emitter.js';
-import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
+import {
+  DefaultError,
+  errorToDefaultError,
+  formatCause,
+} from '@nestjs-yalc/errors/default.error.js';
 import {
   BadGatewayError,
   BadRequestError,
@@ -40,15 +45,21 @@ import {
   UnsupportedMediaTypeError,
 } from '@nestjs-yalc/errors/error.class.js';
 import { getLogLevelByStatus } from './event.helper.js';
-import { ClassType } from '@nestjs-yalc/types/globals.d.js';
+import type { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { HttpStatusCodes } from '@nestjs-yalc/utils/http.helper.js';
 import { httpStatusCodeToErrors } from '@nestjs-yalc/errors/http-status-code-to-errors.js';
+import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 
 export interface IEventServiceOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > {
   formatter?: TFormatter;
 }
+
+export type IErrorBasedMethodOptions<TErrorOptions> = Omit<
+  TErrorOptions,
+  'errorClass'
+>;
 
 /**
  * Decorator to inject a trace into the options object if it's not already set.
@@ -60,7 +71,7 @@ function InjectTrace() {
 
     descriptor.value = function (...args: any[]) {
       // Assuming the options object is the second argument (index 1)
-      let options = args[1];
+      let options: IErrorEventOptions = args[1] as IErrorEventOptions;
 
       // Ensure options is an object, and set the trace if not present
       if (typeof options !== 'object' || options === null) {
@@ -69,8 +80,12 @@ function InjectTrace() {
       }
 
       // Set trace if it's not already set
-      if (!options.trace) {
-        options.trace = new Error().stack;
+      if (
+        !options.stack &&
+        !(options.errorClass as DefaultError)?.stack &&
+        !options.cause?.stack
+      ) {
+        options.stack = new Error().stack;
       }
 
       // Call the original method with possibly modified arguments
@@ -107,8 +122,10 @@ export class YalcEventService<
   emit = this.log;
   emitAsync = this.logAsync;
 
-  @InjectTrace()
-  public error<TOpts extends IErrorEventOptions<TFormatter>>(
+  /**
+   * We do not expose it because the types might be too widely open and allow arbitrary properties, therefore mistakes
+   */
+  protected _error<TOpts extends IErrorEventOptions<TFormatter>>(
     eventName: Parameters<TFormatter> | string,
     options?: TOpts,
   ) {
@@ -125,8 +142,7 @@ export class YalcEventService<
     return eventLogAsync(eventName, this.buildOptions(options));
   }
 
-  @InjectTrace()
-  public async errorAsync<TOpts extends IErrorEventOptions<TFormatter>>(
+  protected async _errorAsync<TOpts extends IErrorEventOptions<TFormatter>>(
     eventName: Parameters<TFormatter> | string,
     options?: TOpts,
   ) {
@@ -134,6 +150,22 @@ export class YalcEventService<
       eventName,
       this.buildOptions<TOpts>(options),
     );
+  }
+
+  @InjectTrace()
+  public error(
+    eventName: Parameters<TFormatter> | string,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
+  ) {
+    return this._error(eventName, options);
+  }
+
+  @InjectTrace()
+  public async errorAsync(
+    eventName: Parameters<TFormatter> | string,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
+  ) {
+    return this._errorAsync(eventName, options);
   }
 
   public async warnAsync(
@@ -200,7 +232,33 @@ export class YalcEventService<
       applyAwaitOption(this.buildErrorOptions(options, selectedError)),
       getLogLevelByStatus(errorCode),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
+  }
+
+  /**
+   * Use this method to proxy an error generated somewhere else. Very useful with try{} catch{} blocks.
+   * Where you do not want to change the nature of the error, but you want to forward it instead.
+   *
+   * NOTE: data property is deep-merged with the error data, with precedence to the errorForward data.
+   */
+  public errorForward<TError extends DefaultError>(
+    eventName: Parameters<TFormatter> | string,
+    error: Error | TError,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
+  ): TError | DefaultError {
+    const rebasedError = errorToDefaultError(error);
+    let mergedOptions = this.buildErrorOptions(options, rebasedError);
+
+    if (mergedOptions.logger === undefined) {
+      mergedOptions = this.applyLoggerLevelByStatus(
+        mergedOptions,
+        rebasedError,
+      );
+    }
+
+    return this._error(eventName, {
+      ...mergedOptions,
+    });
   }
 
   /**
@@ -209,12 +267,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorBadRequest(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): BadRequestError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, BadRequestError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -223,12 +281,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorUnauthorized(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): UnauthorizedError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, UnauthorizedError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -237,12 +295,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorPaymentRequired(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): PaymentRequiredError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, PaymentRequiredError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -251,12 +309,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorForbidden(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): ForbiddenError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, ForbiddenError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -265,12 +323,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorNotFound(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): NotFoundError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, NotFoundError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -279,12 +337,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorMethodNotAllowed(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): MethodNotAllowedError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, MethodNotAllowedError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -293,12 +351,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorNotAcceptable(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): NotAcceptableError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, NotAcceptableError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -307,12 +365,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorConflict(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): ConflictError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, ConflictError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -321,12 +379,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorGone(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): GoneError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, GoneError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -335,14 +393,14 @@ export class YalcEventService<
   @InjectTrace()
   public errorUnsupportedMediaType(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): UnsupportedMediaTypeError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(
         this.buildErrorOptions(options, UnsupportedMediaTypeError),
       ),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -351,14 +409,14 @@ export class YalcEventService<
   @InjectTrace()
   public errorUnprocessableEntity(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): UnprocessableEntityError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(
         this.buildErrorOptions(options, UnprocessableEntityError),
       ),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -367,12 +425,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorTooManyRequests(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): TooManyRequestsError {
     const mergedOptions = this.applyLoggerLevelWarn(
       applyAwaitOption(this.buildErrorOptions(options, TooManyRequestsError)),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -381,12 +439,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorInternalServerError(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): InternalServerError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, InternalServerError),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -395,12 +453,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorNotImplemented(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): NotImplementedError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, NotImplementedError),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -409,12 +467,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorBadGateway(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): BadGatewayError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, BadGatewayError),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -423,12 +481,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorServiceUnavailable(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): ServiceUnavailableError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, ServiceUnavailableError),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   /**
@@ -437,12 +495,12 @@ export class YalcEventService<
   @InjectTrace()
   public errorGatewayTimeout(
     eventName: Parameters<TFormatter> | string,
-    options?: Omit<TErrorOptions, 'errorClass'>,
+    options?: IErrorBasedMethodOptions<TErrorOptions>,
   ): any {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, GatewayTimeoutError),
     );
-    return this.error(eventName, mergedOptions);
+    return this._error(eventName, mergedOptions);
   }
 
   protected applyLoggerLevel<
@@ -450,13 +508,21 @@ export class YalcEventService<
   >(options: TOpt, level: LogLevel): TOpt {
     if (options?.logger === false) return options;
 
+    const loggerOption = resolveLoggerOption(options?.logger);
     return {
       ...options,
       logger: {
-        ...options?.logger,
+        ...(loggerOption || {}),
         level,
       },
     } as TOpt;
+  }
+
+  protected applyLoggerLevelByStatus<
+    TOpts extends IErrorEventOptions<TFormatter>,
+  >(options: TOpts, error: DefaultError): TOpts {
+    const level = getLogLevelByStatus(error.getStatus());
+    return this.applyLoggerLevel(options, level);
   }
 
   protected applyLoggerLevelWarn<
@@ -492,11 +558,31 @@ export class YalcEventService<
     }
 
     if (isErrorOptions(_options)) {
-      const errorOptions = _options as IErrorEventOptions;
-      errorOptions.errorClass ??= DefaultError;
-      errorOptions.trace ??= new Error().stack;
+      const _errorOptions = _options as IErrorEventOptions<TFormatter>;
+      /**
+       * If the errorClass is not a class, it's an error instance. We need to extract the error information from it.
+       */
+      if (
+        _errorOptions.errorClass &&
+        _errorOptions.errorClass !== true &&
+        !isClass(_errorOptions.errorClass)
+      ) {
+        const error = errorToDefaultError(_errorOptions.errorClass);
+        _errorOptions.stack ??= error.stack;
+        _errorOptions.cause ??= error;
+      } else if (_errorOptions.cause) {
+        const cause = formatCause(_errorOptions.cause);
+        _errorOptions.stack ??= cause?.stack;
+      } else {
+        /**
+         * If the errorClass is a class and no trace is set,
+         * we want to set the trace now to avoid extra stack traces down the line.
+         */
+        _errorOptions.stack ??= new Error().stack;
+      }
     }
 
+    const loggerOption = resolveLoggerOption(_options?.logger);
     const res: IErrorEventOptions<TFormatter> = {
       ..._options,
       event,
@@ -504,7 +590,7 @@ export class YalcEventService<
         _options?.logger === false
           ? false
           : {
-              ..._options?.logger,
+              ...(loggerOption || {}),
               instance: this.loggerService,
             },
     };
@@ -514,11 +600,9 @@ export class YalcEventService<
 
   protected buildErrorOptions<TErrorClass extends DefaultError = DefaultError>(
     options: IErrorEventOptions<TFormatter> = {},
-    defaultClass: ClassType<TErrorClass> | boolean = true,
+    defaultClass: ClassType<TErrorClass> | TErrorClass | boolean = true,
   ): IErrorEventOptionsRequired<TFormatter, TErrorClass> {
     options.errorClass ??= defaultClass;
-    return this.buildOptions<
-      IErrorEventOptionsRequired<TFormatter, TErrorClass>
-    >(options as IErrorEventOptionsRequired<TFormatter, TErrorClass>);
+    return options as IErrorEventOptionsRequired<TFormatter, TErrorClass>;
   }
 }

@@ -21,12 +21,14 @@ import {
   event,
   type IEventOptions,
   IErrorEventOptions,
+  getLoggerOption,
+  resolveLoggerOption,
 } from '../index.js';
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { createMock } from '@golevelup/ts-jest';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
-import { type ImprovedNestLogger } from '@nestjs-yalc/logger';
+import { LogLevelEnum, type ImprovedNestLogger } from '@nestjs-yalc/logger';
 import { HttpException } from '@nestjs/common';
 
 describe('Event Service', () => {
@@ -42,7 +44,7 @@ describe('Event Service', () => {
     options = {
       data: { key: 'value' },
       mask: ['key'],
-      trace: 'trace',
+      stack: 'trace',
       event: {
         emitter: eventEmitter,
         formatter: jest.fn() as any,
@@ -69,6 +71,16 @@ describe('Event Service', () => {
       systemMessage,
       expect.anything(),
     );
+  });
+
+  it('should resolve logger option', () => {
+    const result = resolveLoggerOption(false);
+    expect(result).toBeFalsy();
+  });
+
+  it('should get logger option when is string', () => {
+    const result = getLoggerOption(LogLevelEnum.LOG, { logger: LogLevelEnum.DEBUG });
+    expect(result).toMatchObject({ level:  LogLevelEnum.DEBUG });
   });
 
   it('should log event synchronously', () => {
@@ -301,7 +313,7 @@ describe('Event Service', () => {
     expect(result).toBeInstanceOf(Error);
   });
 
-  it('should handle error with class (should not happen)', () => {
+  it('should handle error with class non DefaultError class (should not happen)', () => {
     class CustomError extends HttpException {}
     const _options: IErrorEventOptions = {
       ...options,
@@ -317,6 +329,16 @@ describe('Event Service', () => {
     const _options: IErrorEventOptions = {
       ...options,
       errorClass: true,
+      message,
+    };
+    const result = event(systemMessage, _options);
+    expect(result).toBeInstanceOf(DefaultError);
+  });
+
+  it('should handle error with class instance', async () => {
+    const _options: IErrorEventOptions = {
+      ...options,
+      errorClass: new DefaultError(),
       message,
     };
     const result = event(systemMessage, _options);

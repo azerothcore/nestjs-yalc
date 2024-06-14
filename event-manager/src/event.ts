@@ -13,6 +13,8 @@ import { EventNameFormatter, emitEvent, formatName } from './emitter.js';
 import { ClassType, InstanceType } from '@nestjs-yalc/types/globals.d.js';
 import { getYalcGlobalEventEmitter } from './global-emitter.js';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
+import { isClass } from '@nestjs-yalc/utils/class.helper.js';
+import { deepMergeWithoutArrayConcat } from '@nestjs-yalc/utils/object.helper.js';
 
 interface IEventEmitterOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -58,8 +60,11 @@ export interface IEventOptions<
   mask?: string[];
   event?: IEventEmitterOptions<TFormatter> | false;
   message?: string;
-  trace?: string;
-  logger?: { instance?: ImprovedLoggerService; level?: LogLevel } | false;
+  stack?: string;
+  logger?:
+    | { instance?: ImprovedLoggerService; level?: LogLevel }
+    | LogLevel
+    | false;
   /**
    * This is used to trigger the same event with different names.
    */
@@ -76,7 +81,7 @@ export interface IErrorEventOptions<
    * If set to true, the error will be thrown with the default error class.
    * If set to a class, the error will be thrown with the provided class.
    */
-  errorClass?: ClassType<TErrorClass> | boolean;
+  errorClass?: ClassType<TErrorClass> | TErrorClass | boolean;
 }
 
 export interface IErrorEventOptionsRequired<
@@ -152,7 +157,7 @@ export function event<
   eventName: Parameters<TFormatter> | string,
   options?: TOption,
 ): Promise<ReturnType<TOption>> | ReturnType<TOption> {
-  const { data: _data, event, logger, mask, trace, config } = options ?? {};
+  const { data: _data, event, logger, mask, stack, config } = options ?? {};
   let receivedData = _data;
 
   const formattedEventName = formatName(
@@ -180,33 +185,46 @@ export function event<
     const { errorClass: _class, ...rest } = options;
 
     if (_class !== false && _class !== undefined) {
-      let _errorClass: ClassType<DefaultError>;
-      const errorOptions = rest;
-      if (_class === true) {
-        _errorClass = DefaultError;
+      if (isClass(_class) || _class === true) {
+        let _errorClass: ClassType<DefaultError>;
+        const errorOptions = rest;
+        if (_class === true) {
+          _errorClass = DefaultError;
+        } else {
+          _errorClass = _class;
+        }
+
+        /**
+         * We build the message here.
+         */
+        const message = optionalMessage ?? formattedEventName;
+
+        errorInstance = new _errorClass(message, {
+          eventName: formattedEventName,
+          ...errorOptions,
+          eventEmitter: false,
+          logger: false,
+        }) as ReturnType<TOption>;
       } else {
-        _errorClass = _class;
+        errorInstance = _class as ReturnType<TOption>;
       }
 
-      /**
-       * We build the message here.
-       */
-      const message = optionalMessage ?? formattedEventName;
-
-      errorInstance = new _errorClass(message, {
-        data: receivedData,
-        eventName: formattedEventName,
-        ...errorOptions,
-        eventEmitter: false,
-        logger: false,
-      }) as ReturnType<TOption>;
-
       if (isDefaultErrorMixin(errorInstance)) {
+        errorInstance.setPayload({
+          ...errorInstance.getEventPayload(),
+          data: deepMergeWithoutArrayConcat(
+            errorInstance.getEventPayload().data,
+            receivedData,
+          ),
+        });
         errorPayload = errorInstance.getEventPayload();
       } else {
         errorPayload = {
           ...(errorInstance as any),
-          data: receivedData,
+          data: deepMergeWithoutArrayConcat(
+            (errorInstance as any).data ?? {},
+            receivedData,
+          ),
           config,
         };
       }
@@ -220,7 +238,13 @@ export function event<
    * We build the logger function here unless the logger is false
    */
   if (logger !== false) {
-    const { instance: _instance, level: _level, ...rest } = logger ?? {};
+    const {
+      instance: _instance,
+      level: _level,
+      ...rest
+    } = logger && typeof logger !== 'string'
+      ? logger
+      : { level: logger, instance: undefined };
 
     const { level, instance } = {
       instance: _instance ?? AppLoggerFactory('Event'),
@@ -231,18 +255,18 @@ export function event<
     const message = optionalMessage ?? formattedEventName;
 
     if (level === 'error') {
-      instance.error(message, trace ?? errorPayload?.trace, {
+      instance.error(message, stack ?? errorPayload?.stack, {
         data: { ...data, ...errorPayload },
         event: false,
         config,
-        trace: trace ?? errorPayload?.trace,
+        stack: stack ?? errorPayload?.stack,
       });
     } else {
       instance[level]?.(message, {
         data: { ...data, ...errorPayload },
         event: false,
         config,
-        trace: trace ?? errorPayload?.trace,
+        stack: stack ?? errorPayload?.stack,
       });
     }
   }
@@ -293,10 +317,24 @@ export function event<
   );
 }
 
-function getLoggerOption(level: LogLevel, options?: IEventOptions) {
+export function getLoggerOption(level: LogLevel, options?: IEventOptions) {
   if (options?.logger === false) return false;
 
+  if (typeof options?.logger === 'string') {
+    return { level: options.logger };
+  }
+
   return { level, ...options?.logger };
+}
+
+export function resolveLoggerOption(logger: IEventOptions['logger']) {
+  if (logger === false) return false;
+
+  if (typeof logger === 'string') {
+    return { level: logger };
+  }
+
+  return logger;
 }
 
 export async function eventLogAsync<

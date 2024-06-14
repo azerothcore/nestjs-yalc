@@ -6,6 +6,7 @@ import {
   newDefaultError,
   isDefaultErrorMixin,
   DefaultErrorBase,
+  errorToDefaultError,
 } from '../default.error.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import EventEmitter from 'events';
@@ -113,11 +114,20 @@ describe('DefaultError', () => {
     expect(error.internalMessage).toBe('my internal message');
   });
 
+  it('should be able to use the setPayload method', () => {
+    const error = new DefaultError('my internal message', {
+      logger: true,
+    });
+    error.setPayload({ data: 'test' });
+    expect(error.getEventPayload()).toEqual({ data: 'test' });
+  });
+
   it('should create an instance of Error with default message when message is not provided', () => {
     const error = new DefaultError();
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('Default Error'); // if not specified, the message will be the parsed name of the class
     expect(error.internalMessage).toBeUndefined();
+    expect(`${error}`.startsWith(`Default Error -`)).toBeTruthy();
   });
 
   it('should create an instance of Error with default options when options are not provided', () => {
@@ -163,9 +173,19 @@ describe('DefaultError', () => {
   });
 
   it('should create an instance of Error without defaultError options', () => {
-    const error = new DefaultError('test', { description: 'test' });
+    const error = new DefaultError('internal test message', {
+      description: 'this description should go in the info',
+      data: { test: 'this property should go in the info' },
+    });
     expect(error).toBeInstanceOf(HttpException);
     expect(error.getResponse().message).toBe('Default Error');
+    expect(`${error}`.startsWith('internal test message -')).toBeTruthy();
+    expect(
+      `${error}`.includes('this description should go in the info'),
+    ).toBeTruthy();
+    expect(
+      `${error}`.includes('this property should go in the info'),
+    ).toBeTruthy();
   });
 
   it('should create an instance of the Error with options as a string', () => {
@@ -204,10 +224,30 @@ describe('DefaultError', () => {
 
     it('should have multiple causes', () => {
       const check = new DefaultError('test', {
-        cause: new DefaultError('test', { cause: new Error('test') }),
+        cause: new DefaultError('test', { cause: { nonErrorCause: '' } }),
       });
       expect(check.cause).toBeDefined();
       expect(check.getEventPayload().cause?.parentCause).toBeDefined();
+    });
+  });
+
+  describe('errorToDefaultError', () => {
+    it('should convert an error to a DefaultError', () => {
+      const error = new Error('test');
+      const defaultError = errorToDefaultError(error);
+      expect(defaultError).toBeInstanceOf(DefaultError);
+    });
+
+    it('should convert an HttpException to a DefaultError', () => {
+      const error = new HttpException('test', 500);
+      const defaultError = errorToDefaultError(error);
+      expect(defaultError).toBeInstanceOf(DefaultError);
+    });
+
+    it('should keep a DefaultError as a DefaultError', () => {
+      const error = new DefaultError('test');
+      const defaultError = errorToDefaultError(error);
+      expect(defaultError).toBeInstanceOf(DefaultError);
     });
   });
 });

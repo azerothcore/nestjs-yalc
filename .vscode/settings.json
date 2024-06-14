@@ -34,7 +34,4 @@
     "overrideConfigFile": ".eslintrc.vscode.cjs",
     "ignore": false
   },
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-  },
 }

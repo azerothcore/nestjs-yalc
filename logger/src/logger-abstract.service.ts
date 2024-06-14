@@ -23,7 +23,7 @@ export interface LogMethodOptions {
   config?: any;
   masks?: string[];
   context?: string;
-  trace?: string;
+  stack?: string;
   /**
    * If false, it will not trigger an event.
    * If string, it will trigger an event with the string as the event name instead of the default event name.
@@ -34,7 +34,7 @@ export interface LogMethodOptions {
 export type LogMethod = (message: any, options?: LogMethodOptions) => void;
 export type LogMethodError = (
   message: any,
-  trace?: string,
+  stack?: string,
   options?: LogMethodOptions,
 ) => void;
 
@@ -124,16 +124,16 @@ export abstract class LoggerAbstractService
 
     this.error = (
       message: any,
-      trace?: string,
+      stack?: string,
       options: LogMethodOptions = {},
     ) => {
-      options.trace = trace;
+      options.stack = stack;
       void this.beforeLogging(message, options);
 
       (enabledLevels[LogLevelEnum.ERROR] === true &&
         this.methods[LogLevelEnum.ERROR]
         ? this.methods[LogLevelEnum.ERROR]
-        : () => {})(message, trace, options);
+        : () => {})(message, stack, options);
     };
 
     this.warn = (message: any, options: LogMethodOptions = {}) => {
@@ -201,6 +201,6 @@ export async function beforeLogging(
     masks: options?.masks,
     message,
     logger: false,
-    trace: options?.trace,
+    stack: options?.stack,
   });
 }
