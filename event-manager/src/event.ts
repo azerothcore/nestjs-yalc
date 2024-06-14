@@ -59,8 +59,11 @@ export interface IEventOptions<
   mask?: string[];
   event?: IEventEmitterOptions<TFormatter> | false;
   message?: string;
-  trace?: string;
-  logger?: { instance?: ImprovedLoggerService; level?: LogLevel } | false;
+  stack?: string;
+  logger?:
+    | { instance?: ImprovedLoggerService; level?: LogLevel }
+    | LogLevel
+    | false;
   /**
    * This is used to trigger the same event with different names.
    */
@@ -153,7 +156,7 @@ export function event<
   eventName: Parameters<TFormatter> | string,
   options?: TOption,
 ): Promise<ReturnType<TOption>> | ReturnType<TOption> {
-  const { data: _data, event, logger, mask, trace, config } = options ?? {};
+  const { data: _data, event, logger, mask, stack, config } = options ?? {};
   let receivedData = _data;
 
   const formattedEventName = formatName(
@@ -225,7 +228,13 @@ export function event<
    * We build the logger function here unless the logger is false
    */
   if (logger !== false) {
-    const { instance: _instance, level: _level, ...rest } = logger ?? {};
+    const {
+      instance: _instance,
+      level: _level,
+      ...rest
+    } = logger && typeof logger !== 'string'
+      ? logger
+      : { level: logger, instance: undefined };
 
     const { level, instance } = {
       instance: _instance ?? AppLoggerFactory('Event'),
@@ -236,18 +245,18 @@ export function event<
     const message = optionalMessage ?? formattedEventName;
 
     if (level === 'error') {
-      instance.error(message, trace ?? errorPayload?.trace, {
+      instance.error(message, stack ?? errorPayload?.stack, {
         data: { ...data, ...errorPayload },
         event: false,
         config,
-        trace: trace ?? errorPayload?.trace,
+        stack: stack ?? errorPayload?.stack,
       });
     } else {
       instance[level]?.(message, {
         data: { ...data, ...errorPayload },
         event: false,
         config,
-        trace: trace ?? errorPayload?.trace,
+        stack: stack ?? errorPayload?.stack,
       });
     }
   }
@@ -298,10 +307,24 @@ export function event<
   );
 }
 
-function getLoggerOption(level: LogLevel, options?: IEventOptions) {
+export function getLoggerOption(level: LogLevel, options?: IEventOptions) {
   if (options?.logger === false) return false;
 
+  if (typeof options?.logger === 'string') {
+    return { level: options.logger };
+  }
+
   return { level, ...options?.logger };
+}
+
+export function resolveLoggerOption(logger: IEventOptions['logger']) {
+  if (logger === false) return false;
+
+  if (typeof logger === 'string') {
+    return { level: logger };
+  }
+
+  return logger;
 }
 
 export async function eventLogAsync<

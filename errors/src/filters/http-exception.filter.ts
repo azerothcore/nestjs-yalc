@@ -52,7 +52,7 @@ export class HttpExceptionFilter
         // Base logging for normal operation execution errors
         case error instanceof MissingArgumentsError:
           this.logger.log(error.message, {
-            trace: error.stack,
+            stack: error.stack,
           });
           break;
 
@@ -73,7 +73,7 @@ export class HttpExceptionFilter
                 : error,
               entityError.originalError?.stack,
               {
-                trace: entityError.originalError?.stack,
+                stack: entityError.originalError?.stack,
                 data: {
                   response: entityError.getResponse(),
                   name: entityError.name,
@@ -91,7 +91,7 @@ export class HttpExceptionFilter
 
             if (logLevel === LogLevelEnum.ERROR) {
               this.logger[logLevel](error.message, error.stack, {
-                trace: httpError.stack,
+                stack: httpError.stack,
                 data: {
                   response: httpError.getResponse(),
                   name: error.name,
@@ -100,7 +100,7 @@ export class HttpExceptionFilter
               });
             } else {
               this.logger[logLevel](error.message, {
-                trace: error.stack,
+                stack: error.stack,
                 data: {
                   response: httpError.getResponse(),
                   name: error.name,
@@ -118,7 +118,7 @@ export class HttpExceptionFilter
         // Log critically any other error, as those are not expected
         default:
           this.logger.error(error.message, error.stack, {
-            trace: error.stack,
+            stack: error.stack,
             data: {
               cause: formatCause(error.cause),
               name: error.name,

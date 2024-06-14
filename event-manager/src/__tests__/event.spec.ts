@@ -21,12 +21,14 @@ import {
   event,
   type IEventOptions,
   IErrorEventOptions,
+  getLoggerOption,
+  resolveLoggerOption,
 } from '../index.js';
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { createMock } from '@golevelup/ts-jest';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
-import { type ImprovedNestLogger } from '@nestjs-yalc/logger';
+import { LogLevelEnum, type ImprovedNestLogger } from '@nestjs-yalc/logger';
 import { HttpException } from '@nestjs/common';
 
 describe('Event Service', () => {
@@ -42,7 +44,7 @@ describe('Event Service', () => {
     options = {
       data: { key: 'value' },
       mask: ['key'],
-      trace: 'trace',
+      stack: 'trace',
       event: {
         emitter: eventEmitter,
         formatter: jest.fn() as any,
@@ -69,6 +71,16 @@ describe('Event Service', () => {
       systemMessage,
       expect.anything(),
     );
+  });
+
+  it('should resolve logger option', () => {
+    const result = resolveLoggerOption(false);
+    expect(result).toBeFalsy();
+  });
+
+  it('should get logger option when is string', () => {
+    const result = getLoggerOption(LogLevelEnum.LOG, { logger: LogLevelEnum.DEBUG });
+    expect(result).toMatchObject({ level:  LogLevelEnum.DEBUG });
   });
 
   it('should log event synchronously', () => {

@@ -205,7 +205,7 @@ describe('DefaultError', () => {
 
     it('should have multiple causes', () => {
       const check = new DefaultError('test', {
-        cause: new DefaultError('test', { cause: new Error('test') }),
+        cause: new DefaultError('test', { cause: { nonErrorCause: '' } }),
       });
       expect(check.cause).toBeDefined();
       expect(check.getEventPayload().cause?.parentCause).toBeDefined();
