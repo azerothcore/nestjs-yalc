@@ -111,6 +111,7 @@ export interface IAbstractDefaultError
    * or for event payloads
    */
   getEventPayload(): IErrorEventPayload;
+  setPayload(payload: IErrorEventPayload): void;
 }
 
 export interface IAbstractDefaultErrorConstructor<
@@ -338,6 +339,10 @@ export const DefaultErrorMixin = <
 
     getEventPayload(): IErrorEventPayload {
       return this.eventPayload;
+    }
+
+    setPayload(payload: IErrorEventPayload) {
+      this.eventPayload = payload;
     }
 
     getInternalMessage(): string | undefined {

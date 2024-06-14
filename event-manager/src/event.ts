@@ -14,6 +14,7 @@ import { ClassType, InstanceType } from '@nestjs-yalc/types/globals.d.js';
 import { getYalcGlobalEventEmitter } from './global-emitter.js';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
+import { deepMergeWithoutArrayConcat } from '@nestjs-yalc/utils/object.helper.js';
 
 interface IEventEmitterOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -199,7 +200,6 @@ export function event<
         const message = optionalMessage ?? formattedEventName;
 
         errorInstance = new _errorClass(message, {
-          data: receivedData,
           eventName: formattedEventName,
           ...errorOptions,
           eventEmitter: false,
@@ -210,11 +210,21 @@ export function event<
       }
 
       if (isDefaultErrorMixin(errorInstance)) {
+        errorInstance.setPayload({
+          ...errorInstance.getEventPayload(),
+          data: deepMergeWithoutArrayConcat(
+            errorInstance.getEventPayload().data,
+            receivedData,
+          ),
+        });
         errorPayload = errorInstance.getEventPayload();
       } else {
         errorPayload = {
           ...(errorInstance as any),
-          data: receivedData,
+          data: deepMergeWithoutArrayConcat(
+            (errorInstance as any).data ?? {},
+            receivedData,
+          ),
           config,
         };
       }

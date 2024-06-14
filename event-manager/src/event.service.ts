@@ -235,6 +235,12 @@ export class YalcEventService<
     return this._error(eventName, mergedOptions);
   }
 
+  /**
+   * Use this method to proxy an error generated somewhere else. Very useful with try{} catch{} blocks.
+   * Where you do not want to change the nature of the error, but you want to forward it instead.
+   *
+   * NOTE: data property is deep-merged with the error data, with precedence to the errorForward data.
+   */
   public errorForward<TError extends DefaultError>(
     eventName: Parameters<TFormatter> | string,
     error: Error | TError,

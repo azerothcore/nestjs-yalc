@@ -114,6 +114,14 @@ describe('DefaultError', () => {
     expect(error.internalMessage).toBe('my internal message');
   });
 
+  it('should be able to use the setPayload method', () => {
+    const error = new DefaultError('my internal message', {
+      logger: true,
+    });
+    error.setPayload({ data: 'test' });
+    expect(error.getEventPayload()).toEqual({ data: 'test' });
+  });
+
   it('should create an instance of Error with default message when message is not provided', () => {
     const error = new DefaultError();
     expect(error).toBeInstanceOf(Error);

@@ -58,19 +58,23 @@ describe('Event errorForward', () => {
     );
   });
 
-  it('should call eventError with correct parameters for errorForward with BadRequestError', () => {
+  it('should call eventError with correct parameters for errorForward with BadRequestError with overridden data', () => {
     try {
       throw service.errorBadRequest('original error', {
         message: 'Internal message',
         response: { message: 'Response message' },
+        data: { key: 'value', key3: 'value3' },
       });
     } catch (error: any) {
       const expectedObject = {
         internalMessage: 'Bad request: Internal message',
         message: 'Response message',
+        data: { key: 'value', key2: 'value2', key3: 'valueNew' },
       };
 
-      const forwardedError = service.errorForward('forwarded error', error);
+      const forwardedError = service.errorForward('forwarded error', error, {
+        data: { key2: 'value2', key3: 'valueNew' },
+      });
 
       expect(forwardedError).toBeInstanceOf(BadRequestError);
       expect(forwardedError).toMatchObject({ ...expectedObject, status: 400 });
