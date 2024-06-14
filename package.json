@@ -12,7 +12,7 @@
     "lint:path": "eslint -c .eslintrc.cjs $npm_config_lintpath\"/**/*.ts\" --max-warnings=0",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-import-meta-resolve \" npx jest ",
     "test:watch": "npm run test -- --watch",
-    "test:debug": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-import-meta-resolve --inspect-brk\" npx jest --runInBand --watch --no-cache --coverage=false -- ",
+    "test:debug": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-import-meta-resolve --inspect-brk\" npx jest --runInBand --watch --no-cache ",
     "test:cov": "npm run test -- --coverage",
     "test:cov:watch": "npm run test -- --coverage --watch",
     "test:cov:serve": "npx http-server -c-1 ./var/coverage/",

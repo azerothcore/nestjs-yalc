@@ -23,4 +23,8 @@
   "jest.jestCommandLine": "npm run test:vscode --",
   "jest.coverageFormatter": "DefaultFormatter",
   "eslint.format.enable": true,
+  "eslint.options": {
+    "overrideConfigFile": ".eslintrc.vscode.cjs",
+    "ignore": false
+  },
 }

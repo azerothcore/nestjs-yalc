@@ -11,8 +11,6 @@ import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.servi
 import { createMock } from '@golevelup/ts-jest';
 import type { YalcEventService as EventServiceType } from '../event.service.js';
 import { HttpStatus } from '@nestjs/common';
-import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
-import { BadGatewayError } from '@nestjs-yalc/errors/error.class.js';
 
 jest.unstable_mockModule('../event.js', async () => {
   return {
@@ -30,6 +28,7 @@ jest.unstable_mockModule('../event.js', async () => {
     event: jest.fn(),
     setGlobalEventEmitter: jest.fn(),
     getGlobalEventEmitter: jest.fn(),
+    resolveLoggerOption: jest.fn(),
     isErrorOptions: jest.fn().mockReturnValue(true),
     applyAwaitOption: (options) => options, // stupid workaround because of jest limitations with mocking esm modules
   };
@@ -59,6 +58,7 @@ describe('YalcEventService', () => {
   beforeAll(async () => {});
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     mockLoggerService = createMock<ImprovedLoggerService>();
 
     mockEventEmitter = createMock<EventEmitter2>(new EventEmitter2());
@@ -190,6 +190,8 @@ describe('YalcEventService', () => {
       return Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
         (methodName) =>
           methodName.startsWith('error') &&
+          methodName !== 'errorAsync' &&
+          methodName !== 'errorForward' && // error forward is tested separately
           typeof instance[methodName] === 'function',
       );
     }
@@ -205,6 +207,14 @@ describe('YalcEventService', () => {
         expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
       },
     );
+
+    it('should call eventErrorAsync with correct parameters', () => {
+      service.errorAsync('testEvent');
+      expect(eventErrorAsync).toHaveBeenCalledWith(
+        'testEvent',
+        expect.anything(),
+      );
+    });
   });
 
   describe('warn', () => {

@@ -27,7 +27,7 @@ export class ConsoleLogger extends LoggerAbstractService {
             ...logOnlyDefined(
               `[${options?.context ?? context}]`,
               message,
-              maskDataInObject(options?.data, options?.masks, options?.trace),
+              maskDataInObject(options?.data, options?.masks, options?.stack),
               options?.config,
               ...rest,
             ),
@@ -48,7 +48,7 @@ export class ConsoleLogger extends LoggerAbstractService {
             ...logOnlyDefined(
               `[${options?.context ?? context}]`,
               message,
-              maskDataInObject(options?.data, options?.masks, options?.trace),
+              maskDataInObject(options?.data, options?.masks, options?.stack),
               options?.config,
               ...rest,
             ),
@@ -58,7 +58,7 @@ export class ConsoleLogger extends LoggerAbstractService {
             ...logOnlyDefined(
               `[${options?.context ?? context}]`,
               message,
-              maskDataInObject(options?.data, options?.masks, options?.trace),
+              maskDataInObject(options?.data, options?.masks, options?.stack),
               options?.config,
               ...rest,
             ),
@@ -68,7 +68,7 @@ export class ConsoleLogger extends LoggerAbstractService {
             ...logOnlyDefined(
               `[${options?.context ?? context}]`,
               message,
-              maskDataInObject(options?.data, options?.masks, options?.trace),
+              maskDataInObject(options?.data, options?.masks, options?.stack),
               options?.config,
               ...rest,
             ),

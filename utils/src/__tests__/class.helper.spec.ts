@@ -20,4 +20,8 @@ describe('Test Class Helpers', () => {
       }),
     ).toBeFalsy();
   });
+
+  it('expect an instance of a class to not be a class', () => {
+    expect(isClass(new (class {})())).toBeFalsy();
+  });
 });
