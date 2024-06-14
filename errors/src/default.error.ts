@@ -261,7 +261,7 @@ export const DefaultErrorMixin = <
     ) {
       super(...args);
 
-      const message = this.message;
+      const message = options.internalMessage ?? this.message;
       const stack = options.stack ?? this.stack;
       const errorCode = this.getStatus();
 
@@ -272,7 +272,7 @@ export const DefaultErrorMixin = <
         options.description ?? getHttpStatusDescription(errorCode);
 
       this.betterResponse = _AbstractDefaultError.buildResponse(
-        message,
+        this.message,
         this.description,
         errorCode,
         super.getResponse(),
@@ -350,6 +350,12 @@ export const DefaultErrorMixin = <
 
     getResponse(): IBetterResponseInterface {
       return this.betterResponse;
+    }
+
+    toString(): string {
+      return `${
+        this.internalMessage ?? this.message
+      } -\n [INFO: ${JSON.stringify(this.eventPayload, null, 2)}]`;
     }
 
     static buildResponse(

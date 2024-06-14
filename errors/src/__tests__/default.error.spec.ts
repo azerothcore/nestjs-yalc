@@ -119,6 +119,7 @@ describe('DefaultError', () => {
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('Default Error'); // if not specified, the message will be the parsed name of the class
     expect(error.internalMessage).toBeUndefined();
+    expect(`${error}`.startsWith(`Default Error -`)).toBeTruthy();
   });
 
   it('should create an instance of Error with default options when options are not provided', () => {
@@ -164,9 +165,19 @@ describe('DefaultError', () => {
   });
 
   it('should create an instance of Error without defaultError options', () => {
-    const error = new DefaultError('test', { description: 'test' });
+    const error = new DefaultError('internal test message', {
+      description: 'this description should go in the info',
+      data: { test: 'this property should go in the info' },
+    });
     expect(error).toBeInstanceOf(HttpException);
     expect(error.getResponse().message).toBe('Default Error');
+    expect(`${error}`.startsWith('internal test message -')).toBeTruthy();
+    expect(
+      `${error}`.includes('this description should go in the info'),
+    ).toBeTruthy();
+    expect(
+      `${error}`.includes('this property should go in the info'),
+    ).toBeTruthy();
   });
 
   it('should create an instance of the Error with options as a string', () => {
