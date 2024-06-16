@@ -312,13 +312,12 @@ export function event<
     }
   }
 
-  return (
-    errorInstance ??
-    (async () => {
-      await Promise.all(toAwait);
-      return result as Promise<ReturnType<TOption>>;
-    })()
-  );
+  const promise = (async () => {
+    await Promise.all(toAwait);
+    return result as Promise<ReturnType<TOption>>;
+  })();
+
+  return errorInstance ?? promise;
 }
 
 export function getLoggerOption(level: LogLevel, options?: IEventOptions) {
