@@ -569,7 +569,6 @@ export class YalcEventService<
       ) {
         const error = errorToDefaultError(_errorOptions.errorClass);
         _errorOptions.stack ??= error.stack;
-        _errorOptions.cause ??= error;
       } else if (_errorOptions.cause) {
         const cause = formatCause(_errorOptions.cause);
         _errorOptions.stack ??= cause?.stack;

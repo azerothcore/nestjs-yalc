@@ -131,6 +131,12 @@ describe('Event Service', () => {
     );
   });
 
+  it('should build an error based from Error instance', () => {
+    const error = new Error('test');
+    const result = eventError(systemMessage, { ...options, errorClass: error });
+    expect(result).toBeInstanceOf(Error);
+  });
+
   it('should log warning event asynchronously', async () => {
     await eventWarnAsync(systemMessage, options);
     expect(logger.warn).toHaveBeenCalledWith(systemMessage, expect.anything());

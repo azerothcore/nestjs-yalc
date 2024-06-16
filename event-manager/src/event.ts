@@ -75,13 +75,14 @@ export interface IErrorEventOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
   TErrorClass extends DefaultError = DefaultError,
 > extends IEventOptions<TFormatter>,
-    Omit<IErrorPayload, 'internalMessage' | 'data'> {
+    Omit<IErrorPayload, 'internalMessage' | 'data' | 'cause'> {
   /**
    * If set to false or undefined, the error will not be thrown.
    * If set to true, the error will be thrown with the default error class.
    * If set to a class, the error will be thrown with the provided class.
    */
   errorClass?: ClassType<TErrorClass> | TErrorClass | boolean;
+  cause?: Error;
 }
 
 export interface IErrorEventOptionsRequired<
@@ -182,7 +183,7 @@ export function event<
   let errorInstance;
   let errorPayload: ILogErrorPayload = {};
   if (isErrorOptions(options)) {
-    const { errorClass: _class, ...rest } = options;
+    const { errorClass: _class, logger, ...rest } = options;
 
     if (_class !== false && _class !== undefined) {
       if (isClass(_class) || _class === true) {
@@ -210,20 +211,22 @@ export function event<
       }
 
       if (isDefaultErrorMixin(errorInstance)) {
-        errorInstance.setPayload({
-          ...errorInstance.getEventPayload(),
-          data: deepMergeWithoutArrayConcat(
-            errorInstance.getEventPayload().data,
-            receivedData,
-          ),
+        errorInstance.mergeErrorInfo({
+          ...rest,
+          data: receivedData,
         });
         errorPayload = errorInstance.getEventPayload();
       } else {
         errorPayload = {
+          ...rest,
           ...(errorInstance as any),
           data: deepMergeWithoutArrayConcat(
             (errorInstance as any).data ?? {},
             receivedData,
+          ),
+          response: deepMergeWithoutArrayConcat(
+            (errorInstance as any).response ?? {},
+            options.response ?? {},
           ),
           config,
         };

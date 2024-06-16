@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getHttpStatusNameByCode } from './error.enum.js';
+import { deepMergeWithoutArrayConcat } from '@nestjs-yalc/utils/object.helper.js';
 
 export const ON_DEFAULT_ERROR_EVENT = 'onDefaultError';
 
@@ -111,7 +112,17 @@ export interface IAbstractDefaultError
    * or for event payloads
    */
   getEventPayload(): IErrorEventPayload;
-  setPayload(payload: IErrorEventPayload): void;
+  setErrorInfo(
+    options: IAbstractDefaultErrorOptions & {
+      response?: Partial<IBetterResponseInterface>;
+    },
+  ): void;
+  mergeErrorInfo(
+    info: IAbstractDefaultErrorOptions & {
+      response?: Partial<IBetterResponseInterface>;
+      cause?: Error;
+    },
+  ): void;
 }
 
 export interface IAbstractDefaultErrorConstructor<
@@ -248,11 +259,12 @@ export const DefaultErrorMixin = <
     description?: string;
     internalMessage?: string;
     eventName?: string;
+    resolvedStack?: string;
 
     __DefaultErrorMixin = Object.freeze(true);
 
-    protected eventPayload: IErrorEventPayload;
-    protected betterResponse: IBetterResponseInterface;
+    protected eventPayload!: IErrorEventPayload;
+    protected betterResponse!: IBetterResponseInterface;
     public readonly logger?: Required<loggerOptionType>;
     public readonly eventEmitter?: EventEmitter2;
 
@@ -263,6 +275,53 @@ export const DefaultErrorMixin = <
       super(...args);
 
       const message = options.internalMessage ?? this.message;
+
+      this.setErrorInfo(options);
+
+      if (options.logger) {
+        const { instance, level } =
+          options.logger !== true
+            ? options.logger
+            : { instance: undefined, level: undefined };
+
+        this.logger = {
+          instance: instance ?? AppLoggerFactory('DefaultError'),
+          level: level ?? getLogLevelByStatus(this.getStatus()),
+        };
+
+        if (this.logger.level === 'error') {
+          this.logger.instance.error(message, this.resolvedStack, {
+            data: this.eventPayload,
+            stack: this.resolvedStack,
+          });
+        } else {
+          this.logger.instance?.[this.logger.level]?.(message, {
+            data: this.eventPayload,
+            stack: this.resolvedStack,
+          });
+        }
+      }
+
+      const eventEmitter =
+        options.eventEmitter === true || options.eventEmitter === undefined
+          ? getYalcGlobalEventEmitter()
+          : options.eventEmitter;
+
+      if (eventEmitter !== false) {
+        this.eventName ??= ON_DEFAULT_ERROR_EVENT;
+        this.eventEmitter = eventEmitter;
+        this.eventEmitter.emit(this.eventName, {
+          ...this.eventPayload,
+          eventName: this.eventName,
+        });
+      }
+    }
+
+    setErrorInfo(
+      options: IAbstractDefaultErrorOptions & {
+        response?: Partial<IBetterResponseInterface>;
+      },
+    ) {
       const stack = options.stack ?? this.stack;
       const errorCode = this.getStatus();
 
@@ -276,7 +335,7 @@ export const DefaultErrorMixin = <
         this.message,
         this.description,
         errorCode,
-        super.getResponse(),
+        options?.response ?? super.getResponse(),
       );
 
       this.data = options.masks
@@ -296,53 +355,61 @@ export const DefaultErrorMixin = <
         cause,
       };
 
+      this.resolvedStack = stack;
       this.eventPayload = payload;
+    }
 
-      if (options.logger) {
-        const { instance, level } =
-          options.logger !== true
-            ? options.logger
-            : { instance: undefined, level: undefined };
+    /**
+     * Deep merge the error info with the provided info.
+     */
+    mergeErrorInfo(
+      info: IAbstractDefaultErrorOptions & {
+        response?: Partial<IBetterResponseInterface>;
+        cause?: Error;
+      },
+    ) {
+      if (info.internalMessage) this.internalMessage = info.internalMessage;
+      if (info.description) this.description = info.description;
+      if (info.eventName) this.eventName = info.eventName;
 
-        this.logger = {
-          instance: instance ?? AppLoggerFactory('DefaultError'),
-          level: level ?? getLogLevelByStatus(this.getStatus()),
+      if (info.data)
+        this.data = deepMergeWithoutArrayConcat(this.data ?? {}, info.data);
+
+      if (info.stack) this.resolvedStack = info.stack;
+
+      if (info.cause) {
+        this.cause = info.cause;
+        this.eventPayload.cause = formatCause(info.cause);
+      }
+
+      if (info.response) {
+        this.betterResponse = {
+          ...this.betterResponse!,
+          ..._AbstractDefaultError.buildResponse(
+            this.message,
+            this.description!,
+            this.getStatus(),
+            info.response,
+          ),
         };
 
-        if (this.logger.level === 'error') {
-          this.logger.instance.error(message, stack, {
-            data: payload,
-            stack,
-          });
-        } else {
-          this.logger.instance?.[this.logger.level]?.(message, {
-            data: payload,
-            stack: stack,
-          });
-        }
+        this.message = this.betterResponse.message;
       }
 
-      const eventEmitter =
-        options.eventEmitter === true || options.eventEmitter === undefined
-          ? getYalcGlobalEventEmitter()
-          : options.eventEmitter;
-
-      if (eventEmitter !== false) {
-        this.eventName ??= ON_DEFAULT_ERROR_EVENT;
-        this.eventEmitter = eventEmitter;
-        this.eventEmitter.emit(this.eventName, {
-          ...payload,
-          eventName: this.eventName,
-        });
-      }
+      this.eventPayload = {
+        ...this.eventPayload,
+        data: this.data,
+        eventName: this.eventName,
+        description: this.description,
+        internalMessage: this.internalMessage,
+        errorName: this.name,
+        ...this.betterResponse,
+        stack: this.resolvedStack,
+      };
     }
 
     getEventPayload(): IErrorEventPayload {
       return this.eventPayload;
-    }
-
-    setPayload(payload: IErrorEventPayload) {
-      this.eventPayload = payload;
     }
 
     getInternalMessage(): string | undefined {
@@ -375,7 +442,6 @@ export const DefaultErrorMixin = <
       } else {
         responseObj = response;
       }
-
       /**
        * We know that passing a string as the first argument
        * it returns an object with the message, error and the statusCode.

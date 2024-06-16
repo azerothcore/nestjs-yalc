@@ -114,12 +114,51 @@ describe('DefaultError', () => {
     expect(error.internalMessage).toBe('my internal message');
   });
 
-  it('should be able to use the setPayload method', () => {
+  it('should be able to use the setErrorInfo method', () => {
     const error = new DefaultError('my internal message', {
       logger: true,
     });
-    error.setPayload({ data: 'test' });
-    expect(error.getEventPayload()).toEqual({ data: 'test' });
+    error.setErrorInfo({ data: 'test error info' });
+    expect(error.getEventPayload()).toMatchObject({ data: 'test error info' });
+  });
+
+  it('should be able to use the mergeErrorInfo method', () => {
+    const error = new DefaultError('my internal message', {
+      logger: true,
+    });
+    error.mergeErrorInfo({
+      data: { test: 'test error info' },
+      response: { message: 'test error response' },
+      cause: new Error('test cause'),
+      internalMessage: 'test internal message',
+      description: 'test description',
+      eventName: 'test event name',
+      stack: 'test stack',
+    });
+    expect(error.getEventPayload()).toMatchObject({
+      data: { test: 'test error info' },
+      message: 'test error response',
+      cause: expect.anything(),
+      internalMessage: 'test internal message',
+      description: 'test description',
+      eventName: 'test event name',
+      stack: 'test stack',
+    });
+  });
+
+  it('should be able to cover the mergeErrorInfo method', () => {
+    const error = new DefaultError('my internal message', {
+      logger: true,
+      description: undefined,
+      response: undefined,
+    });
+    error.mergeErrorInfo({
+      data: { test: 'test error info' },
+    });
+    expect(error.getEventPayload()).toMatchObject({
+      data: { test: 'test error info' },
+      message: 'Default Error',
+    });
   });
 
   it('should create an instance of Error with default message when message is not provided', () => {

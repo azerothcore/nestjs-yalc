@@ -62,18 +62,19 @@ describe('Event errorForward', () => {
     try {
       throw service.errorBadRequest('original error', {
         message: 'Internal message',
-        response: { message: 'Response message' },
+        response: { message: 'Response message original' },
         data: { key: 'value', key3: 'value3' },
       });
     } catch (error: any) {
       const expectedObject = {
         internalMessage: 'Bad request: Internal message',
-        message: 'Response message',
+        message: 'Response message new',
         data: { key: 'value', key2: 'value2', key3: 'valueNew' },
       };
 
       const forwardedError = service.errorForward('forwarded error', error, {
         data: { key2: 'value2', key3: 'valueNew' },
+        response: { message: 'Response message new' },
       });
 
       expect(forwardedError).toBeInstanceOf(BadRequestError);
