@@ -30,7 +30,7 @@ export class ImprovedNestLogger
   private composeMessage(message: any, options: LogMethodOptions) {
     const data = {
       ...maskDataInObject(options.data, options.masks, options.stack),
-      ...options.config,
+      config: options.config,
     };
 
     return (

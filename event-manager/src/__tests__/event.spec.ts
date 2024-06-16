@@ -240,6 +240,7 @@ describe('Event Service', () => {
       ...options,
       logger: false,
       message,
+      data: { key: 'value' },
     };
     eventLog(systemMessage, _options);
     expect(logger.log).not.toHaveBeenCalled();

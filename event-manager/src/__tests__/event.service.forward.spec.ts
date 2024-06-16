@@ -69,7 +69,11 @@ describe('Event errorForward', () => {
       const expectedObject = {
         internalMessage: 'Bad request: Internal message',
         message: 'Response message new',
-        data: { key: 'value', key2: 'value2', key3: 'valueNew' },
+        data: expect.objectContaining({
+          key: 'value',
+          key2: 'value2',
+          key3: 'valueNew',
+        }),
       };
 
       const forwardedError = service.errorForward('forwarded error', error, {

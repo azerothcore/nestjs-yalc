@@ -15,6 +15,7 @@ import { getYalcGlobalEventEmitter } from './global-emitter.js';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import { deepMergeWithoutArrayConcat } from '@nestjs-yalc/utils/object.helper.js';
+import _ from 'lodash';
 
 interface IEventEmitterOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -181,7 +182,7 @@ export function event<
    *
    */
   let errorInstance;
-  let errorPayload: ILogErrorPayload = {};
+  let errorPayload: ILogErrorPayload | null = null;
   if (isErrorOptions(options)) {
     const { errorClass: _class, logger, ...rest } = options;
 
@@ -257,16 +258,17 @@ export function event<
 
     const message = optionalMessage ?? formattedEventName;
 
+    const logData = errorPayload ? errorPayload : { data };
     if (level === 'error') {
       instance.error(message, stack ?? errorPayload?.stack, {
-        data: { ...data, ...errorPayload },
+        data: logData,
         event: false,
         config,
         stack: stack ?? errorPayload?.stack,
       });
     } else {
       instance[level]?.(message, {
-        data: { ...data, ...errorPayload },
+        data: logData,
         event: false,
         config,
         stack: stack ?? errorPayload?.stack,
@@ -290,8 +292,7 @@ export function event<
       message: optionalMessage,
       data,
       eventName: formattedEventName,
-      errorInfo:
-        Object.keys(errorPayload).length > 0 ? errorPayload : undefined,
+      errorInfo: !_.isEmpty(errorPayload) ? errorPayload : undefined,
     };
 
     result = emitEvent<TFormatter>(eventEmitter, eventName, eventPayload, {
