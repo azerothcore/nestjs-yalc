@@ -355,7 +355,7 @@ describe('Event Service', () => {
   it('should handle events with eventAliases option', async () => {
     const _options: IEventOptions = {
       ...options,
-      eventAliases: ['alias1', 'alias2'],
+      eventAliases: ['alias1', 'alias2', { eventName: 'alias3', await: false }],
     };
     await eventLogAsync(systemMessage, _options);
     expect(logger.log).toHaveBeenCalledWith(systemMessage, expect.anything());
@@ -369,6 +369,10 @@ describe('Event Service', () => {
     );
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
       'alias2',
+      expect.anything(),
+    );
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
+      'alias3',
       expect.anything(),
     );
   }

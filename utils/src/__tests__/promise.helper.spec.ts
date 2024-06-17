@@ -7,7 +7,7 @@ import {
   beforeEach,
   test,
 } from '@jest/globals';
-import { promiseMap } from '../promise.helper.js';
+import { PromiseTracker, promiseMap } from '../promise.helper.js';
 
 describe('promise helper test', () => {
   const elements = [1, 2];
@@ -25,5 +25,19 @@ describe('promise helper test', () => {
     const result = await promiseMap(elements, async (element) => element);
 
     expect(result).toEqual(elements);
+  });
+});
+
+describe('promise tracker test', () => {
+  it('It should wait for all promises to resolve', async () => {
+    const promiseTracker = new PromiseTracker();
+
+    const promises = [Promise.resolve(1), Promise.resolve(2)];
+
+    promises.forEach((promise) => promiseTracker.add(promise));
+
+    await promiseTracker.waitForAll();
+
+    expect(promiseTracker['promises']).toHaveLength(0);
   });
 });

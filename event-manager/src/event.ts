@@ -16,6 +16,7 @@ import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import { deepMergeWithoutArrayConcat } from '@nestjs-yalc/utils/object.helper.js';
 import _ from 'lodash';
+import { globalPromiseTracker } from '@nestjs-yalc/utils/promise.helper.js';
 
 interface IEventEmitterOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -23,6 +24,11 @@ interface IEventEmitterOptions<
   emitter?: EventEmitter2;
   formatter?: TFormatter;
   await?: boolean;
+}
+
+export interface IEventAliasOptions {
+  eventName: string;
+  await: boolean;
 }
 
 export interface IDataInfo {
@@ -69,7 +75,7 @@ export interface IEventOptions<
   /**
    * This is used to trigger the same event with different names.
    */
-  eventAliases?: string[];
+  eventAliases?: (string | IEventAliasOptions)[];
 }
 
 export interface IErrorEventOptions<
@@ -302,12 +308,30 @@ export function event<
 
     if (options?.eventAliases) {
       toAwait.push(
-        ...options.eventAliases.map((alias) =>
-          emitEvent<TFormatter>(eventEmitter, alias, eventPayload, {
-            formatter,
-            await: event?.await,
-          }),
-        ),
+        ...options.eventAliases.map((alias) => {
+          let eventName;
+          let _await;
+
+          if (typeof alias === 'string') {
+            eventName = alias;
+            _await = event?.await;
+          } else {
+            eventName = alias.eventName;
+            _await = alias?.await;
+          }
+
+          const emittedEvent = emitEvent<TFormatter>(
+            eventEmitter,
+            eventName,
+            eventPayload,
+            {
+              formatter,
+              await: _await,
+            },
+          );
+
+          return emittedEvent;
+        }),
       );
     }
   }
@@ -317,7 +341,10 @@ export function event<
     return result as Promise<ReturnType<TOption>>;
   })();
 
-  return errorInstance ?? promise;
+  globalPromiseTracker.add(promise);
+
+  const returnedError = errorInstance;
+  return returnedError ?? promise;
 }
 
 export function getLoggerOption(level: LogLevel, options?: IEventOptions) {

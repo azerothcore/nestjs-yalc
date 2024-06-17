@@ -1,5 +1,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
+import { globalPromiseTracker } from '@nestjs-yalc/utils/promise.helper.js';
 export type EventNameFormatter = (...args: any[]) => string;
 
 export interface IEventEmitterOptions<TFormatter extends EventNameFormatter> {
@@ -30,7 +31,11 @@ export async function emitEvent<TFormatter extends EventNameFormatter>(
   if (!options?.await) {
     return eventEmitter.emit(_name, data);
   } else {
-    return eventEmitter.emitAsync(_name, data);
+    const promise = eventEmitter.emitAsync(_name, data);
+
+    globalPromiseTracker.add(promise);
+
+    return promise;
   }
 }
 

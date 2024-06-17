@@ -21,3 +21,28 @@ export function promiseMap<Element, NewElement>(
     stopOnError: options?.stopOnError ?? true,
   });
 }
+
+/**
+ * This class allows you to track multiple promises and wait for all of them to resolve.
+ */
+export class PromiseTracker {
+  private promises: Promise<any>[] = [];
+
+  add(promise: Promise<any>) {
+    this.promises.push(promise);
+    promise.finally(() => this.remove(promise));
+  }
+
+  private remove(promise: Promise<any>) {
+    this.promises = this.promises.filter((p) => p !== promise);
+  }
+
+  async waitForAll() {
+    await Promise.all(this.promises);
+  }
+}
+
+/**
+ * This is a global instance of the PromiseTracker class.
+ */
+export const globalPromiseTracker = new PromiseTracker();
