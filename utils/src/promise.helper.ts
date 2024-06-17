@@ -30,10 +30,11 @@ export class PromiseTracker {
 
   add(promise: Promise<any>) {
     this.promises.push(promise);
-    promise.finally(() => this.remove(promise));
+    void promise.finally(() => this.remove(promise));
   }
 
   private remove(promise: Promise<any>) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.promises = this.promises.filter((p) => p !== promise);
   }
 
