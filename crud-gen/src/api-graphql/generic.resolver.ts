@@ -288,7 +288,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
           `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`,
         );
 
-      ResolveField(returnValue(CrudGenGqlType<Entity>(relType)), {
+      ResolveField(() => CrudGenGqlType<Entity>(relType), {
         nullable: resolverInfo.agField?.gqlOptions?.nullable,
       })(resolver.prototype, resolverInfo.relation.propertyName, descriptor);
       UseInterceptors(new CrudGenGqlInterceptor())(
@@ -371,7 +371,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
           `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`,
         );
 
-      ResolveField(returnValue(relType), {
+      ResolveField(() => relType, {
         nullable: resolverInfo.agField?.gqlOptions?.nullable,
       })(resolver.prototype, resolverInfo.relation.propertyName, descriptor);
 
@@ -466,13 +466,13 @@ export function defineGetSingleResource<Entity>(
     if (!methodOptions.idName.hidden) {
       Args(methodOptions.idName.name, {
         nullable: false,
-        type: returnValue(String),
+        type: () => String,
       })(resolver.prototype, queryName, 2);
     }
   } else {
     Args(methodOptions.idName ?? 'ID', {
       nullable: false,
-      type: returnValue(String),
+      type: () => String,
     })(resolver.prototype, queryName, 2);
   }
 

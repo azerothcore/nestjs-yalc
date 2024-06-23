@@ -18,7 +18,6 @@ import {
   objectToFieldMapper,
 } from '../crud-gen.helpers.js';
 import { agJoinArgFactory } from './crud-gen.input.js';
-import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { GraphQLResolveInfo } from 'graphql';
 import { mapCrudGenParam } from '../typeorm/crud-gen-args.helpers.js';
 import { ExtraArgsStrategy, GeneralFilters } from '../crud-gen.enum.js';
@@ -118,9 +117,8 @@ export const CrudGenCombineDecorators = (params: ICrudGenGqlArgsOptions) => {
 export const CrudGenArgs = (params: ICrudGenGqlArgsOptions) => {
   const gqlOptions = params.gql ?? {};
   if (!gqlOptions.type) {
-    gqlOptions.type = returnValue(
-      crudGenParamsFactory(params.defaultValue, params.entityType),
-    );
+    const type = crudGenParamsFactory(params.defaultValue, params.entityType);
+    gqlOptions.type = () => type;
   }
 
   params.gql = gqlOptions;
@@ -134,9 +132,8 @@ export const CrudGenArgs = (params: ICrudGenGqlArgsOptions) => {
 export const CrudGenArgsNoPagination = (params: ICrudGenGqlArgsOptions) => {
   const gqlOptions = params.gql ?? {};
   if (!gqlOptions.type) {
-    gqlOptions.type = returnValue(
-      crudGenParamsNoPaginationFactory(params.defaultValue, params.entityType),
-    );
+    gqlOptions.type = () =>
+      crudGenParamsNoPaginationFactory(params.defaultValue, params.entityType);
   }
 
   params.gql = gqlOptions;

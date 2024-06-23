@@ -64,7 +64,7 @@ export class SkeletonUserResolver extends resolverFactory({
           filterCondition: GeneralFilters.CONTAINS,
           filterType: FilterType.TEXT,
           options: {
-            type: returnValue(String),
+            type: () => String,
             nullable: true,
           },
         },
@@ -72,7 +72,7 @@ export class SkeletonUserResolver extends resolverFactory({
           filterCondition: GeneralFilters.CONTAINS,
           filterType: FilterType.TEXT,
           options: {
-            type: returnValue(String),
+            type: () => String,
             nullable: true,
           },
         },
@@ -91,7 +91,7 @@ export class SkeletonUserResolver extends resolverFactory({
         lowerCaseEmail: {
           gqlOptions: {
             description: 'Force the email to be in lowercase',
-            type: returnValue(Boolean),
+            type: () => Boolean,
             defaultValue: true,
             nullable: true,
           },

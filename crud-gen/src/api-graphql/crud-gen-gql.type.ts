@@ -1,7 +1,6 @@
 import { ObjectType, Field, HideField } from '@nestjs/graphql';
 import { Type } from '@nestjs/common';
 import { FindManyOptions, FindOperator, ObjectLiteral } from 'typeorm';
-import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { IExtraArg, ICombinedWhereModel } from './crud-gen-gql.interface.js';
 import { Operators } from '../crud-gen.enum.js';
 import { FieldMapperProperty } from '@nestjs-yalc/interfaces';
@@ -27,8 +26,8 @@ export interface IConnectionGql extends IConnection {
 export const typeMap: {
   [key: string]: { new (name: string): IConnectionGql };
 } = {};
-export default function CrudGenGqlType<T>(type: Type<T>): any {
-  const { name } = type;
+export default function CrudGenGqlType<T>(fieldType: Type<T>): any {
+  const { name } = fieldType;
   if (typeMap[`${name}`]) return typeMap[`${name}`];
 
   @ObjectType(`${name}Connection`, { isAbstract: true })
@@ -36,9 +35,9 @@ export default function CrudGenGqlType<T>(type: Type<T>): any {
     @HideField() // internally used
     public name = `${name}Connection`;
 
-    @Field(returnValue([type]), { nullable: true })
+    @Field(() => [fieldType], { nullable: true })
     public nodes!: T[];
-    @Field(returnValue(PageDataCrudGenGql), { nullable: true })
+    @Field(() => PageDataCrudGenGql, { nullable: true })
     public pageData!: PageDataCrudGenGql;
   }
   typeMap[`${name}`] = Connection;

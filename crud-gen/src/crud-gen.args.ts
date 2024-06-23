@@ -5,7 +5,6 @@ import {
   sortModelFactory,
 } from './api-graphql/crud-gen.input.js';
 import { FilterScalar } from './filter.scalar.js';
-import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { RowDefaultValues } from './crud-gen.enum.js';
 import { ICrudGenBaseParams } from './api-graphql/crud-gen-gql.interface.js';
@@ -24,12 +23,12 @@ export function crudGenParamsFactory(
   class CrudGenParams implements ICrudGenBaseParams {
     startRow: number = defaultValues?.startRow ?? RowDefaultValues.START_ROW;
     endRow: number = defaultValues?.endRow ?? RowDefaultValues.END_ROW;
-    @Field(returnValue(SortType), {
+    @Field(() => SortType, {
       nullable: true,
       defaultValue: defaultValues?.sorting,
     })
     sorting?: typeof SortType;
-    @Field(returnValue(FilterType), {
+    @Field(() => FilterType, {
       nullable: true,
       defaultValue: defaultValues?.filters,
     })
@@ -50,19 +49,20 @@ export function crudGenParamsNoPaginationFactory(
     : FilterScalar;
 
   @ArgsType()
-  class CrudGenParams implements ICrudGenBaseParams {
-    @Field(returnValue(SortType), {
+  class CrudGenParamsNoPagination implements ICrudGenBaseParams {
+    @Field(() => SortType, {
       nullable: true,
       defaultValue: defaultValues?.sorting,
     })
     sorting?: typeof SortType;
-    @Field(returnValue(FilterType), {
+
+    @Field(() => FilterType, {
       nullable: true,
       defaultValue: defaultValues?.filters,
     })
     filters?: typeof FilterType;
   }
 
-  typeMap.set(CrudGenParams, CrudGenParams);
-  return typeMap.get(CrudGenParams);
+  typeMap.set(CrudGenParamsNoPagination, CrudGenParamsNoPagination);
+  return typeMap.get(CrudGenParamsNoPagination);
 }
