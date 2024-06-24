@@ -68,7 +68,7 @@
     "@nestjs/typeorm": "^9.0.1 || ^10.0.0",
     "axios": "^1.4.0",
     "nestjs-cls": "^3.6.0",
-    "typescript": "^4.9.5 || ^5.3.3"
+    "typescript": "^4.9.5 || ^5.4.3"
   },
   "peerDependenciesMeta": {
     "@nestjs/apollo": {
@@ -135,6 +135,7 @@
     "@types/nestjs-yalc": "./types",
     "@typescript-eslint/eslint-plugin": "^7.12.0",
     "@typescript-eslint/parser": "^7.12.0",
+    "esbuild": "^0.21.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",

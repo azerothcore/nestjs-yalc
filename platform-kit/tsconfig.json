@@ -1,7 +1,7 @@
 {
   "extends": "../toolkit-config/typescript/tsconfig.json",
   "compilerOptions": {
-    "outDir": "./var/dist"
+    "outDir": "./var/dist",
   },
   "include": [
     "apps/**/src/**/*.ts",
@@ -12,5 +12,5 @@
     "test",
     "dist",
     "**/*spec.ts"
-  ]
+  ],
 }

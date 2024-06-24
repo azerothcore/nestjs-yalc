@@ -16,7 +16,7 @@ import { TypeORMLogger } from '@nestjs-yalc/logger';
 import { APP_ALIAS_USER, TYPEORM_USER_CONNECTION_TOKEN } from './user.def.js';
 import { ConfFactory } from './config/config.js';
 import path from 'path';
-import { ___dirname } from '@nestjs-yalc/utils';
+import { ___dirname, envIsTrue } from '@nestjs-yalc/utils';
 
 const userModuleBootstrap = (module: Type<any>) => {
   const skeletonPhoneProviders = yalcPhoneProviderFactory(
@@ -46,6 +46,8 @@ const userModuleBootstrap = (module: Type<any>) => {
             entities: [YalcUserEntity, YalcUserPhoneEntity],
             logger: new TypeORMLogger(eventService),
             name: TYPEORM_USER_CONNECTION_TOKEN,
+            synchronize:
+              !conf.isProduction && !envIsTrue(process.env.TYPEORM_NO_SEL_DB),
             ...conf.typeorm,
           };
         },

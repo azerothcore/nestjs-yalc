@@ -18,6 +18,21 @@ program
   .helpOption('-info, --info', 'Display help for command');
 
 /**
+ * Jest
+ */
+
+nestJsCustomCommand(
+  program,
+  (rootPath) =>
+    `NODE_OPTIONS="--experimental-vm-modules --experimental-import-meta-resolve" npx jest --logHeapUsage  --config "${rootPath}/test/jest-e2e.ts" --detectOpenHandles --coverage false`,
+  'test:e2e',
+  projects,
+  {
+    noCd: true,
+  },
+);
+
+/**
  * TYPEORM
  */
 

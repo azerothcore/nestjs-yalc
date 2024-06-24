@@ -77,7 +77,7 @@ export class SkeletonUserResolver extends resolverFactory({
           },
         },
       },
-      extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
+      extraArgsStrategy: ExtraArgsStrategy.DEFAULT,
       queryParams: {
         // name: 'getSkeletonUserGrid',
         description: 'Get a list of users',

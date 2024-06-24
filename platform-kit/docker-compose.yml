@@ -26,6 +26,26 @@ services:
       timeout: 40s
       retries: 20
 
+  yalc-database-test:
+    <<: *networks
+    image: mysql:8.3
+    restart: unless-stopped
+    cap_add:
+      - SYS_NICE # CAP_SYS_NICE
+    ports:
+      - ${DOCKER_DB_EXTERNAL_PORT:-63307}:3306
+    expose:
+      - 3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DOCKER_DB_ROOT_PASSWORD:-password}
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: '/usr/bin/mysql --user=root --password=$$MYSQL_ROOT_PASSWORD --execute "SHOW DATABASES;"'
+      interval: 2s
+      timeout: 40s
+      retries: 20
+
   phpmyadmin:
     <<: *networks
     image: phpmyadmin

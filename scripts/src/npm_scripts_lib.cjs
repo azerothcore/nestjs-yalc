@@ -5,12 +5,15 @@ const os = require('os');
 
 const script = process.argv.slice(2);
 
-const run = (options = { doNotExitOnError: false }, ...commands) =>
+const run = (
+  options = { doNotExitOnError: false, cwd: process.cwd() },
+  ...commands
+) =>
   commands.forEach((command) => {
     try {
       execSync(command, {
         stdio: 'inherit',
-        cwd: path.join(__dirname, '../'),
+        cwd: options.cwd,
       });
     } catch (e) {
       console.log('sdterr', e.stderr.toString());

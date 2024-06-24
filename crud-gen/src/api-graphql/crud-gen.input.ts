@@ -141,11 +141,13 @@ export function filterExpressionInputFactory<Entity>(
     field!: string;
   }
 
+  @InputType(`${entityModel.name}FilterInput`, {
+    description: 'Filter expression input',
+  })
   /**
    * Since union for input types are not possible yet, we need this type
    * @see https://github.com/graphql/graphql-spec/issues/488
    */
-  @InputType(`${entityModel.name}FilterInput`)
   class FilterExpressionProperty implements IFilterExpressionsProperty {
     @Field(
       /* istanbul ignore next */
@@ -181,11 +183,11 @@ export function filterExpressionInputFactory<Entity>(
       { defaultValue: Operators.AND, nullable: true },
     )
     operator?: Operators;
-    // @Field(
-    //   /* istanbul ignore next */
-    //   () => [FilterExpressionProperty],
-    // )
-    // expressions?: FilterExpressionProperty[];
+    @Field(
+      /* istanbul ignore next */
+      () => [FilterExpressionProperty],
+    )
+    expressions?: FilterExpressionProperty[];
     @Field(
       /* istanbul ignore next */
       () => [FilterExpression],

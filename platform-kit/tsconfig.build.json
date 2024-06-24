@@ -5,6 +5,14 @@
     "target": "ESNext",
     "moduleResolution": "Bundler",
   },
-  "include": ["apps/**/src/**/*.ts", "libs/**/src/**/*.ts"],
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+  "include": [
+    "apps/**/src/**/*.ts",
+    "libs/**/src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "test",
+    "dist",
+    "**/*spec.ts"
+  ]
 }

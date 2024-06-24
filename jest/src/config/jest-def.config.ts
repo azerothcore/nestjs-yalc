@@ -30,7 +30,7 @@ export const tsJestConfigE2E = (
 
   const conf: any = {
     diagnostics: false,
-    isolatedModules: true,
+    isolatedModules: false,
     tsconfig: {
       ...(tsConfigFile?.config.compilerOptions ?? {}),
       ...(tsconfig ?? {}),
@@ -40,7 +40,7 @@ export const tsJestConfigE2E = (
 
   if (withGqlPlugin) {
     conf.astTransformers = {
-      before: [path.join(__dirname, 'gql-plugin.js')],
+      before: [path.join(__dirname, 'gql-plugin.ts')],
     };
   }
 
@@ -164,7 +164,7 @@ const defaultConf = (
       '<rootDir>/docs/',
       '<rootDir>/node_modules/',
     ],
-    preset: 'ts-jest/presets/default-esm',
+    preset: 'ts-jest/presets/js-with-ts-esm',
     testEnvironment: 'node',
     moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts'], // add typescript to the default options
     testRegex: '.*\\.spec\\.ts$',
