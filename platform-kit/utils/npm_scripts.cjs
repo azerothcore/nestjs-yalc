@@ -24,7 +24,7 @@ program
 nestJsCustomCommand(
   program,
   (rootPath) =>
-    `NODE_OPTIONS="--experimental-vm-modules --experimental-import-meta-resolve" npx jest --logHeapUsage  --config "${rootPath}/test/jest-e2e.ts" --detectOpenHandles --coverage false`,
+    `NODE_OPTIONS="--experimental-vm-modules --experimental-import-meta-resolve" npx jest --logHeapUsage  --config "${rootPath}/test/jest-e2e.ts" --detectOpenHandles --forceExit --coverage false`,
   'test:e2e',
   projects,
   {

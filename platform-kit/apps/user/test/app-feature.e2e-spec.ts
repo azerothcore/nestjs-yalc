@@ -5,9 +5,10 @@ import { AppBootstrap } from '@nestjs-yalc/app/app-bootstrap.helper.js';
 import { APP_ALIAS_USER_API } from '../src/user.def.ts';
 import { runQuery } from '@nestjs-yalc/jest/config/jest-conf.helpers.js';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
-import { expect } from '@jest/globals';
+import { beforeEach, describe, expect, it } from '@jest/globals';
+import { afterEach } from 'node:test';
 
-describe('AppController (e2e)', () => {
+describe('User app (feature test)', () => {
   let app: NestFastifyApplication;
 
   beforeEach(async () => {
@@ -21,6 +22,10 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = await initTestingApp(moduleFixture, appBootstrap);
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 
   it('should get the empty user list', async () => {

@@ -32,3 +32,10 @@ runs:
       run: |
         export JEST_WORKERS=${{ inputs.jest-workers }}
         npm run test:cov
+
+    - name: Test platform-kit
+      shell: bash
+      working-directory: ${{ github.workspace }}/${{ inputs.working-directory }}/platform-kit
+      run: |
+        export JEST_WORKERS=${{ inputs.jest-workers }}
+        npm run ci:checks -- --only=test:apps:e2e
