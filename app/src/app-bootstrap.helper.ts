@@ -23,7 +23,6 @@ import {
   IGlobalOptions,
 } from './app-bootstrap-base.helper.js';
 import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
-import { globalPromiseTracker } from '@nestjs-yalc/utils/promise.helper.js';
 
 export interface ICreateOptions {
   enableSwagger?: boolean;
@@ -56,7 +55,7 @@ export class AppBootstrap<
     await this.initApp(options);
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
-      await this.getApp().close();
+      await this.closeApp();
       process.exit(0);
     }
 
@@ -82,21 +81,6 @@ export class AppBootstrap<
     });
   }
 
-  async closeApp() {
-    await this.cleanup();
-
-    await this.app?.close();
-  }
-
-  async cleanup() {
-    /**
-     * When running behind a lambda, we have to await for all the promises that have been added to the global promise tracker
-     * to avoid them being killed by the lambda
-     * @see - https://stackoverflow.com/questions/64688812/running-tasks-in-aws-lambda-background
-     */
-    await globalPromiseTracker.waitForAll();
-  }
-
   async initSetup(options?: {
     createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
@@ -107,7 +91,7 @@ export class AppBootstrap<
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
       this.loggerService?.log('Dry run, exiting...');
-      await this.getApp().close();
+      await this.closeApp();
       process.exit(0);
     }
 
@@ -247,7 +231,7 @@ export class AppBootstrap<
       // eslint-disable-next-line no-console
       console.debug('Hot reload enabled. Reloading...');
       hmr.accept();
-      hmr.dispose(() => this.getApp().close());
+      hmr.dispose(() => this.closeApp());
     }
   }
 }

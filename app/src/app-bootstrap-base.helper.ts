@@ -16,6 +16,7 @@ import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
 import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
 import { FastifyInstance } from 'fastify';
 import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
+import { globalPromiseTracker } from '@nestjs-yalc/utils/promise.helper.js';
 
 /**
  * Side effect to be executed as soon as the module is imported
@@ -33,7 +34,7 @@ export interface IGlobalOptions {
   skipMultiServerCheck?: boolean;
 }
 
-const bootstrappedApps: any[] = [];
+const bootstrappedApps: Set<any> = new Set();
 
 export const getBootstrappedApps = () => {
   return bootstrappedApps;
@@ -44,11 +45,11 @@ export const getMainBootstrappedApp = <
     NestFastifyApplication | INestApplicationContext
   >,
 >(): TApp | null => {
-  if (getBootstrappedApps().length === 0) {
+  if (getBootstrappedApps().entries.length === 0) {
     return null;
   }
 
-  return getBootstrappedApps()[0];
+  return getBootstrappedApps().values().next().value;
 };
 
 export abstract class BaseAppBootstrap<
@@ -57,6 +58,7 @@ export abstract class BaseAppBootstrap<
   protected app?: TAppType;
   protected loggerService!: LoggerService;
   protected module: Type<any> | DynamicModule;
+  private isClosed = false;
 
   constructor(
     protected appAlias: string,
@@ -69,14 +71,16 @@ export abstract class BaseAppBootstrap<
       options?.globalsOptions,
     );
 
+    const bootstrappedApps = getBootstrappedApps();
     const bootstrappedApp = getMainBootstrappedApp();
+
     if (bootstrappedApp && !options?.globalsOptions?.skipMultiServerCheck) {
       throw new Error(
         'You are trying to bootstrap multiple servers in the same process. This is not allowed. Use a different process for each server',
       );
     }
 
-    getBootstrappedApps().push(this);
+    bootstrappedApps.add(this);
   }
 
   async initApp(options?: {
@@ -90,7 +94,22 @@ export abstract class BaseAppBootstrap<
   setApp(app: TAppType) {
     this.app = app;
 
+    /**
+     * Monkey patch the close method to set the isClosed flag
+     */
+    const originalCloseFn = this.app.close.bind(this.app);
+    this.app.close = async () => {
+      this.isClosed = true;
+      const closeRes = await originalCloseFn();
+      getBootstrappedApps().delete(this);
+      return closeRes;
+    };
+
     return this;
+  }
+
+  isAppClosed() {
+    return this.isClosed;
   }
 
   getAppAlias() {
@@ -108,6 +127,23 @@ export abstract class BaseAppBootstrap<
     }
 
     return this.app;
+  }
+
+  async closeApp() {
+    await this.cleanup();
+
+    await this.app?.close();
+
+    this.isClosed = true;
+  }
+
+  async cleanup() {
+    /**
+     * When running behind a lambda, we have to await for all the promises that have been added to the global promise tracker
+     * to avoid them being killed by the lambda
+     * @see - https://stackoverflow.com/questions/64688812/running-tasks-in-aws-lambda-background
+     */
+    await globalPromiseTracker.waitForAll();
   }
 
   /**

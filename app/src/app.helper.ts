@@ -1,8 +1,11 @@
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
-import { DynamicModule, INestApplicationContext, Type } from '@nestjs/common';
+import { DynamicModule, Type } from '@nestjs/common';
 import { StandaloneAppBootstrap } from './app-bootstrap-standalone.helper.js';
 import lodash from 'lodash';
-import { IGlobalOptions } from './app-bootstrap-base.helper.js';
+import {
+  BaseAppBootstrap,
+  IGlobalOptions,
+} from './app-bootstrap-base.helper.js';
 const { curry } = lodash;
 
 export function isDynamicModule(module: any): module is DynamicModule {
@@ -10,17 +13,18 @@ export function isDynamicModule(module: any): module is DynamicModule {
 }
 
 export const executeFunctionForApp = async (
-  app: INestApplicationContext,
+  app: BaseAppBootstrap<any>,
   serviceType: any,
   fn: { (service: any): Promise<any> },
   options: { closeApp?: boolean },
 ): Promise<void> => {
-  await app.init();
+  const nestApp = await app.getApp();
+  await nestApp.init();
 
-  const service = await app.resolve(serviceType);
+  const service = await nestApp.resolve(serviceType);
 
   await fn(service).finally(async () => {
-    if (options.closeApp) await app.close();
+    if (options.closeApp) await app.closeApp();
   });
 };
 
@@ -38,13 +42,11 @@ export const curriedExecuteStandaloneFunction = async <
   options?: TOptions,
 ) =>
   curry(executeFunctionForApp)(
-    (
-      await new StandaloneAppBootstrap(
-        isDynamicModule(module) ? module.module.name : module.name,
-        module,
-        options,
-      ).initApp()
-    ).getApp(),
+    await new StandaloneAppBootstrap(
+      isDynamicModule(module) ? module.module.name : module.name,
+      module,
+      options,
+    ).initApp(),
   );
 
 /**
