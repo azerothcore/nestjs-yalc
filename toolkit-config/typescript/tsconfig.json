@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "strict": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "sourceMap": true,
+    "incremental": true,
+    "importHelpers": true,
+    "isolatedModules": true,
+    "preserveConstEnums": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "node_modules/@nestjs/swagger/node_modules/@types",
+      "node_modules/@nestjs-yalc/types",
+      "../../types-extends"
+    ]
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "experimentalSpecifierResolution": "node",
+    "files": true,
+    "esm": true,
+    "swc": true
+  }
+}

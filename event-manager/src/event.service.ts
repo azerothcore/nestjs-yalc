@@ -83,7 +83,7 @@ function InjectTrace() {
       if (
         !options.stack &&
         !(options.errorClass as DefaultError)?.stack &&
-        !options.cause?.stack
+        !(options.cause as any)?.stack
       ) {
         options.stack = new Error().stack;
       }

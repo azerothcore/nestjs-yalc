@@ -1,2 +1,2 @@
-export * from './globals.js';
-export * from './modules.js';
+export * from './globals.d.js';
+export * from './modules.d.js';

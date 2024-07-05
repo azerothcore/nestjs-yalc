@@ -57,6 +57,7 @@ the nestjs-yalc directory structure is flat to let it be integrated in other pro
   - tsconfig.test.json -> used by jest
   - tsconfig.dev.json -> used by other dev tools such as eslint
 - test.js
-- examples/ ->
+- platform-kit/ -> a boilerplate to start your NestJS-Yalc platform project
+- platform-modules -> a collection of modules that you can extends to start your own platform
 - docs/ -> used for the the github pages markdown
 - [other_libraries]/

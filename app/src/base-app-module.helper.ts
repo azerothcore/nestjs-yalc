@@ -32,6 +32,7 @@ import { EventModule } from '@nestjs-yalc/event-manager/index.js';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { YalcClsModule } from './cls.module.js';
 import { IYalcControllerStaticInterface } from './yalc-controller.interface.js';
+import path from 'path';
 import _ from 'lodash';
 import { IGlobalOptions } from './app-bootstrap-base.helper.js';
 import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
@@ -64,17 +65,20 @@ export function getCachedModule(module: any, isSingleton: boolean) {
 }
 
 export function envFilePathList(dirname: string = '.') {
+  const absPath = path.resolve(dirname);
+  Logger.debug(`Loading env from: ${absPath}`);
+
   const envFilePath: string[] = [];
 
-  envFilePath.push(`${dirname}/.env`); // user-defined env (git-ignored)
+  envFilePath.push(`${absPath}/.env`); // user-defined env (git-ignored)
 
   if (process.env.NODE_ENV) {
-    envFilePath.push(`${dirname}/.env.${process.env.NODE_ENV}`); // user-defined env (git-ignored)
+    envFilePath.push(`${absPath}/.env.${process.env.NODE_ENV}`); // user-defined env (git-ignored)
   }
 
   // .env.dist is always loaded except in production
   if (process.env.NODE_ENV !== 'production')
-    envFilePath.push(`${dirname}/.env.dist`);
+    envFilePath.push(`${absPath}/.env.dist`);
 
   return envFilePath;
 }
@@ -152,36 +156,29 @@ export function yalcBaseAppModuleMetadataFactory(
     },
   ];
 
-  const logger = options?.logger;
-  if (logger) {
-    _providers.push(
-      (logger === true ? LoggerServiceFactory : logger)(
-        appAlias,
-        APP_LOGGER_SERVICE,
-        appAlias,
-      ),
-    );
+  _providers.push({
+    provide: getAppLoggerToken(appAlias),
+    useExisting: APP_LOGGER_SERVICE,
+  });
 
-    _providers.push({
-      provide: getAppLoggerToken(appAlias),
-      useExisting: APP_LOGGER_SERVICE,
-    });
-  }
+  _providers.push(
+    (options?.logger ?? LoggerServiceFactory)(
+      appAlias,
+      APP_LOGGER_SERVICE,
+      appAlias,
+    ),
+  );
 
-  const hasConfig = _options.extraConfigs || _options.configFactory;
-
-  if (hasConfig) {
-    _providers.push(
-      createAppConfigProvider(appAlias),
-      /**
-       * Alias
-       */
-      {
-        provide: AppConfigService,
-        useExisting: getAppConfigToken(appAlias),
-      },
-    );
-  }
+  _providers.push(
+    createAppConfigProvider(appAlias),
+    /**
+     * Alias
+     */
+    {
+      provide: AppConfigService,
+      useExisting: getAppConfigToken(appAlias),
+    },
+  );
 
   if (!_options.skipDuplicateAppCheck) {
     _providers.push(LifeCycleHandler);
@@ -195,62 +192,97 @@ export function yalcBaseAppModuleMetadataFactory(
 
   const _imports: DynamicModule['imports'] = [];
 
-  if (hasConfig) {
-    const envFilePath: string[] = _buildEnvFilePath(
-      options?.envDir,
-      options?.envPath,
-    );
+  const envFilePath: string[] = _buildEnvFilePath(
+    options?.envDir,
+    options?.envPath,
+  );
 
-    _imports.push(
-      YalcGlobalStaticModule,
-      (options?.eventModuleClass ?? EventModule).forRootAsync({
-        imports: [module],
-        loggerProvider: {
-          provide: 'INTERNAL_APP_LOGGER_SERVICE',
-          useExisting: getAppLoggerToken(appAlias),
-        },
-        eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
-        eventEmitter: {
-          provide: 'INTERNAL_APP_EVENT_EMITTER',
-          useExisting: EventEmitter2,
-        },
-      }),
-      ConfigModule.forRoot({
-        envFilePath,
-        load: [
-          registerAs(appAlias, async () => {
-            /**
-             * @see https://docs.nestjs.com/techniques/configuration#environment-variables-loaded-hook
-             */
-            await ConfigModule.envVariablesLoaded;
+  _imports.push(
+    YalcGlobalStaticModule,
+    (options?.eventModuleClass ?? EventModule).forRootAsync({
+      imports: [module],
+      loggerProvider: {
+        provide: 'INTERNAL_APP_LOGGER_SERVICE',
+        useExisting: getAppLoggerToken(appAlias),
+      },
+      eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
+      eventEmitter: {
+        provide: 'INTERNAL_APP_EVENT_EMITTER',
+        useExisting: EventEmitter2,
+      },
+    }),
+    ConfigModule.forRoot({
+      envFilePath,
+      load: [
+        registerAs(appAlias, async () => {
+          /**
+           * @see https://docs.nestjs.com/techniques/configuration#environment-variables-loaded-hook
+           */
+          await ConfigModule.envVariablesLoaded;
 
-            return await (_options.configFactory?.() ?? {});
-          }),
-          ...(_options.extraConfigs ?? []),
-        ],
-        validationSchema: Joi.object({
-          NODE_ENV: Joi.string()
-            .valid(
-              NODE_ENV.DEVELOPMENT,
-              NODE_ENV.PRODUCTION,
-              NODE_ENV.TEST,
-              NODE_ENV.PIPELINE,
-            )
-            .default(NODE_ENV.DEVELOPMENT),
+          return await (_options.configFactory?.() ?? {});
         }),
-        validationOptions: {
-          allowUnknown: true,
-          abortEarly: true,
-        },
-        /**
-         * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
-         * It allows us to use the ConfigService in any module without having to import the ConfigModule
-         */
-        isGlobal: true,
+        ...(_options.extraConfigs ?? []),
+      ],
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid(
+            NODE_ENV.DEVELOPMENT,
+            NODE_ENV.PRODUCTION,
+            NODE_ENV.TEST,
+            NODE_ENV.PIPELINE,
+          )
+          .default(NODE_ENV.DEVELOPMENT),
       }),
-      YalcClsModule,
-    );
-  }
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: true,
+      },
+      /**
+       * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
+       * It allows us to use the ConfigService in any module without having to import the ConfigModule
+       */
+      isGlobal: true,
+    }),
+    YalcClsModule,
+  );
+
+  _imports.push(
+    ConfigModule.forRoot({
+      envFilePath,
+      load: [
+        registerAs(appAlias, async () => {
+          /**
+           * @see https://docs.nestjs.com/techniques/configuration#environment-variables-loaded-hook
+           */
+          await ConfigModule.envVariablesLoaded;
+
+          return await (_options.configFactory?.() ?? {});
+        }),
+        ...(_options.extraConfigs ?? []),
+      ],
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid(
+            NODE_ENV.DEVELOPMENT,
+            NODE_ENV.PRODUCTION,
+            NODE_ENV.TEST,
+            NODE_ENV.PIPELINE,
+          )
+          .default(NODE_ENV.DEVELOPMENT),
+      }),
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: true,
+      },
+      /**
+       * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
+       * It allows us to use the ConfigService in any module without having to import the ConfigModule
+       */
+      isGlobal: true,
+    }),
+    YalcClsModule,
+  );
 
   if (imports) {
     _imports.push(...imports);
@@ -258,13 +290,9 @@ export function yalcBaseAppModuleMetadataFactory(
 
   const _exports: DynamicModule['exports'] = [getAppEventToken(appAlias)];
 
-  if (options?.logger) {
-    _exports.push(getAppLoggerToken(appAlias));
-  }
+  _exports.push(getAppLoggerToken(appAlias));
 
-  if (hasConfig) {
-    _exports.push(getAppConfigToken(appAlias));
-  }
+  _exports.push(getAppConfigToken(appAlias));
 
   if (exports) {
     _exports.push(...exports);

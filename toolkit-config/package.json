@@ -1,0 +1,21 @@
+{
+  "name": "@nestjs-yalc/toolkit-config",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "custom": {
+    "nest": {
+      "type": "library"
+    }
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./*.js": "./src/*.ts",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Drassil",
+  "license": "MIT"
+}

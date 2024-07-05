@@ -1,16 +1,17 @@
 {
   "editor.formatOnSave": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   "[typescript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "vscode.json-language-features"
   },
   "[yaml]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[json]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "vscode.json-language-features"
   },
   "[html]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
@@ -22,7 +23,13 @@
   "jest.runMode": "on-demand",
   "jest.jestCommandLine": "npm run test:vscode --",
   "jest.coverageFormatter": "DefaultFormatter",
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ],
   "eslint.format.enable": true,
+  "eslint.codeActionsOnSave.mode": "problems",
+  "eslint.enable": true,
   "eslint.options": {
     "overrideConfigFile": ".eslintrc.vscode.cjs",
     "ignore": false

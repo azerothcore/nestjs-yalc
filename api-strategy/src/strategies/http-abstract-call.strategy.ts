@@ -22,11 +22,18 @@ export interface HttpOptions<
   parameters?: TParams;
 }
 
-export interface IHttpCallStrategyResponse<T = any> {
+export interface IHttpCallStrategyResponse<T = any, THeaders = any> {
   data: T;
   status: number;
   statusText: string;
+  /**
+   * This are the headers transformed to be compatible with the standard OutgoingHttpHeaders
+   */
   headers: OutgoingHttpHeaders;
+  /**
+   * This are the headers as they are returned by the http library used
+   */
+  rawHeaders: THeaders;
   // config: AxiosRequestConfig<D>;
   request?: any;
 }

@@ -1,0 +1,16 @@
+{
+  "extends": "../toolkit-config/typescript/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./var/dist",
+  },
+  "include": [
+    "apps/**/src/**/*.ts",
+    "libs/**/src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "test",
+    "dist",
+    "**/*spec.ts"
+  ],
+}

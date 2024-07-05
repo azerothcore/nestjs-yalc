@@ -2,11 +2,24 @@ import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { DynamicModule, INestApplicationContext, Type } from '@nestjs/common';
 import { StandaloneAppBootstrap } from './app-bootstrap-standalone.helper.js';
 import lodash from 'lodash';
+import { AppBootstrap } from './app-bootstrap.helper.js';
 import { IGlobalOptions } from './app-bootstrap-base.helper.js';
 const { curry } = lodash;
 
 export function isDynamicModule(module: any): module is DynamicModule {
   return module.module !== undefined;
+}
+
+export interface IAppBuilderOptions extends IGlobalOptions {
+  /**
+   * This enables/disables special features for standalone apps
+   */
+  isDirectExecution?: boolean;
+}
+
+export interface IExecutionOption {
+  appOptions?: IAppBuilderOptions;
+  closeApp?: boolean;
 }
 
 export const executeFunctionForApp = async (
@@ -24,6 +37,10 @@ export const executeFunctionForApp = async (
   });
 };
 
+export interface IStandaloneOptions extends IGlobalOptions {
+  appAlias?: string;
+}
+
 /**
  * Curried version of the executeStandaloneFunctionForApp to memoize the app
  * Use it when you need to run the executeStandaloneFunction multiple time
@@ -32,7 +49,7 @@ export const executeFunctionForApp = async (
  * @returns
  */
 export const curriedExecuteStandaloneFunction = async <
-  TOptions extends IGlobalOptions,
+  TOptions extends IStandaloneOptions,
 >(
   module: any,
   options?: TOptions,
@@ -40,19 +57,55 @@ export const curriedExecuteStandaloneFunction = async <
   curry(executeFunctionForApp)(
     (
       await new StandaloneAppBootstrap(
-        isDynamicModule(module) ? module.module.name : module.name,
+        options?.appAlias ??
+          (isDynamicModule(module) ? module.module.name : module.name),
         module,
         options,
       ).initApp()
     ).getApp(),
   );
 
+export const curriedExecuteStandaloneAppFunction = async (
+  appAlias: string,
+  module: any,
+  options?: IExecutionOption,
+) =>
+  curry(executeFunctionForApp)(
+    (
+      await new StandaloneAppBootstrap(
+        appAlias ??
+          (isDynamicModule(module) ? module.module.name : module.name),
+        module,
+        {
+          ...options?.appOptions,
+          isDirectExecution: true,
+        },
+      ).initApp()
+    ).getApp(),
+  );
+
+export const curriedExecuteAppFunction = async (
+  appAlias: string,
+  module: any,
+  options?: IExecutionOption,
+) => {
+  return curry(executeFunctionForApp)(
+    (
+      await new AppBootstrap(
+        appAlias ??
+          (isDynamicModule(module) ? module.module.name : module.name),
+        module,
+        {
+          ...options?.appOptions,
+          isDirectExecution: true,
+        },
+      ).initApp()
+    ).getApp(),
+  );
+};
+
 /**
  *
- * @param module
- * @param serviceType
- * @param fn
- * @returns
  */
 export const executeStandaloneFunction = async <
   TService,

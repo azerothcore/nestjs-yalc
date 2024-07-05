@@ -1,0 +1,30 @@
+{
+  "name": "@nestjs-yalc/logger",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "src/index.ts",
+  "custom": {
+    "nest": {
+      "type": "library"
+    }
+  },
+  "custom": {
+    "nest": {
+      "type": "library"
+    }
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./*.js": "./src/*.ts",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/fast-redact": "^3.0.2"
+  }
+}

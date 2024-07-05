@@ -113,3 +113,13 @@ type HTTPMethods =
   | 'put'
   | 'OPTIONS'
   | 'options';
+
+/**
+ * Can be used to solve circular dependencies with types
+ * also used as values in the same file
+ */
+type TypeRef<T> = T;
+
+type InjectType<T, I> = { [K in keyof T]: T[K] | I };
+
+type Nullable<T> = InjectType<T, null | undefined>;

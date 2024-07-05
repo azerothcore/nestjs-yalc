@@ -500,9 +500,11 @@ export class GenericService<
     if (databaseName) this.switchDatabaseConnection(databaseName);
     if (relations) findOptions.relations = relations;
 
-    return withCount
+    const result = withCount
       ? this.repository.getManyAndCountExtended(findOptions)
       : this.repository.getManyExtended(findOptions);
+
+    return result;
   }
 
   protected mapEntityR2W(
@@ -530,7 +532,8 @@ export class GenericService<
       const fieldMetadata = fieldMetadataList?.[propertyName];
 
       if (!fieldMetadata?.dst || !isDstExtended(fieldMetadata.dst)) {
-        newEntityWrite[propertyName] = entityRead[propertyName as any];
+        newEntityWrite[propertyName] =
+          entityRead[propertyName as keyof typeof entityRead];
         continue;
       }
 
@@ -538,7 +541,7 @@ export class GenericService<
 
       newEntityWrite[propertyName] = dst.transformerDst?.(
         newEntityWrite,
-        entityRead[propertyName as any],
+        entityRead[propertyName as keyof typeof entityRead],
       );
     }
 

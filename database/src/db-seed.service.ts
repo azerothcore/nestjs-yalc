@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck -- TODO: FIX THIS
 
-import { factory, useSeeding } from 'typeorm-seeding';
+import { useSeeding } from 'typeorm-seeding';
 import { ConfigureOption } from 'typeorm-seeding/dist/connection.js';
 import * as common from '@nestjs/common';
 import { DataSource } from 'typeorm';

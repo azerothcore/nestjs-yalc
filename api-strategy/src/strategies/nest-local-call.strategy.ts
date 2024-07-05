@@ -80,6 +80,7 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
     return {
       data,
       headers: result.headers,
+      rawHeaders: result.headers,
       status: result.statusCode,
       statusText: result.statusMessage,
       request: result.payload, // TODO: double check if it's the correct value

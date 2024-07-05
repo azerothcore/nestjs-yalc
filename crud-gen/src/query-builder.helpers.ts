@@ -34,7 +34,7 @@ SelectQueryBuilder.prototype.getMany = async function () {
           getDestinationFieldName(field.dst),
           propertyKey,
           {
-            prefix: this.connection.driver.escape(this.alias),
+            prefix: this.alias,
             onlyAlias: true,
           },
         );

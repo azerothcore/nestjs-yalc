@@ -22,14 +22,12 @@ import { BuildSchemaOptions, GraphQLModule } from '@nestjs/graphql';
 import { JwtModule } from '@nestjs/jwt';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { IServiceConf } from './conf.type.js';
-import { GraphQLError } from 'graphql/error';
 import { GraphQLFormattedError } from 'graphql/error';
 // import { AppLoggerModule } from '@nestjs-yalc/logger/app-logger.module.js';
 import { TypeORMLogger } from '@nestjs-yalc/logger/typeorm-logger.js';
 import { CURAPP_CONF_ALIAS } from './def.const.js';
 import { AppEvents } from './app.events.js';
 import { GqlComplexityPlugin } from '@nestjs-yalc/graphql/plugins/gql-complexity.plugin.js';
-import { ApolloServerPlugin } from 'apollo-server-plugin-base';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import {
@@ -38,6 +36,7 @@ import {
 } from '@nestjs/apollo';
 
 import * as dotenv from 'dotenv';
+import { ApolloServerPlugin } from '@apollo/server';
 dotenv.config(); // preload .env root file before all the others
 
 export interface IAppImportsFactory {
@@ -218,13 +217,14 @@ export function AppDependencyFactory(
             useGlobalPrefix: true,
             // Makes sure not too much info. is revealed when reporting errors in non-dev stages
             // @url: https://github.com/nestjs/graphql/issues/1053#issuecomment-740739410
-            formatError: (error: GraphQLError) => {
-              const exception: any = error.extensions?.exception;
-              const message = exception?.response?.message || error.message;
+            formatError: (formattedError: GraphQLFormattedError, error) => {
+              const exception: any = formattedError.extensions?.exception;
+              const message =
+                exception?.response?.message || formattedError.message;
 
               if (conf && (conf.isDev || conf.isTest)) {
                 return {
-                  ...error,
+                  ...formattedError,
                   message, // override the message with meaningful info
                 };
               }
@@ -233,9 +233,9 @@ export function AppDependencyFactory(
               const productionError: GraphQLFormattedError = {
                 message,
                 extensions: {
-                  path: error.path,
-                  code: error.extensions?.code,
-                  exception: error.originalError, // error without stacktrace
+                  path: formattedError.path,
+                  code: formattedError.extensions?.code,
+                  exception: error, // error without stacktrace
                 },
               };
 

@@ -28,6 +28,9 @@ export interface IYalcBaseAppOptions extends Partial<ISingletonDynamicModule> {
   configFactory?: ConfigFactory<ConfigObject>;
   extraConfigs?: (ConfigFactory<ConfigObject> &
     ConfigFactoryKeyHost<ReturnType<ConfigFactory<ConfigObject>>>)[];
+  /**
+   * List of the env files to load
+   */
   envPath?: string | string[];
   /**
    * When envPath is not defined, this will be used to find the env file
@@ -35,7 +38,7 @@ export interface IYalcBaseAppOptions extends Partial<ISingletonDynamicModule> {
   envDir?: string;
   migrations?: ClassType[];
   skipDuplicateAppCheck?: boolean;
-  logger?: boolean | typeof LoggerServiceFactory;
+  logger?: typeof LoggerServiceFactory;
   eventModuleClass?: typeof EventModule;
 }
 

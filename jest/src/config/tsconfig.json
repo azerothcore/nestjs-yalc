@@ -3,7 +3,8 @@
     "strict": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    "module": "CommonJS",
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "forceConsistentCasingInFileNames": true
   }
 }

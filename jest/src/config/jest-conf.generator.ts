@@ -13,13 +13,13 @@ import defaultConf, {
   tsJestConfigE2E,
 } from './jest-def.config';
 // import { options as jestOptionObject } from 'jest-cli/build/cli/args';
-import _yargs from 'yargs';
-const yargs = _yargs.default;
+import yargs from 'yargs';
 
 interface IAppDep {
   name: string;
   path: string;
 }
+
 export interface IAppProjSetting {
   confOverride?: any;
   deps: IAppDep[];
@@ -92,6 +92,11 @@ export function jestConfGenerator(
 
   let projects = [];
 
+  const typesMap: Record<string, string> = {
+    library: 'lib',
+    application: 'app',
+  };
+
   const confFactory = (
     projName: string,
     proj: IProjectInfo,
@@ -102,8 +107,8 @@ export function jestConfGenerator(
       options.defaultConfOptions,
       tsJestConfig(
         options.tsConfigPath?.(proj) ??
-          `${rootPath}/${proj.path}/tsconfig.${
-            proj.type === 'library' ? 'lib' : 'app'
+          `${rootPath}/${proj.path}/tsconfig${
+            typesMap[proj.type] ? `.${typesMap[proj.type]}` : ''
           }.json`,
         options.tsJestConfig,
       ),

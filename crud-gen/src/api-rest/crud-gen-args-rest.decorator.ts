@@ -1,4 +1,3 @@
-import { returnValue } from '@nestjs-yalc/utils/index.js';
 import {
   applyDecorators,
   createParamDecorator,
@@ -25,7 +24,7 @@ import {
   ApiOkResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { ClassType } from 'nestjs-yalc';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { IConnection } from '../crud-gen.interface.js';
 
 export function mapCrudGenRestParams<Entity extends ObjectLiteral>(
@@ -102,9 +101,8 @@ export const CrudGenCombineDecorators = (params: ICrudGenGqlArgsOptions) => {
 export const CGQueryArgs = (params: ICrudGenGqlArgsOptions) => {
   const gqlOptions = params.gql ?? {};
 
-  gqlOptions.type = returnValue(
-    crudGenRestParamsFactory(params.defaultValue, params.entityType),
-  );
+  const type = crudGenRestParamsFactory(params.defaultValue, params.entityType);
+  gqlOptions.type = () => type;
 
   params.gql = gqlOptions;
 
@@ -117,12 +115,11 @@ export const CGQueryArgs = (params: ICrudGenGqlArgsOptions) => {
 export const CGQueryArgsNoPagination = (params: ICrudGenGqlArgsOptions) => {
   const gqlOptions = params.gql ?? {};
   if (!gqlOptions.type) {
-    gqlOptions.type = returnValue(
-      crudGenRestParamsNoPaginationFactory(
-        params.defaultValue,
-        params.entityType,
-      ),
+    const type = crudGenRestParamsNoPaginationFactory(
+      params.defaultValue,
+      params.entityType,
     );
+    gqlOptions.type = () => type;
   }
 
   params.gql = gqlOptions;

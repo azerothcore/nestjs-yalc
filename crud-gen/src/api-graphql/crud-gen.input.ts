@@ -88,6 +88,7 @@ export function filterExpressionInputFactory<Entity>(
   class FilterText implements ITextFilterModel {
     @HideField()
     filterType!: FilterType.TEXT;
+    @Field(() => GeneralFilters)
     type!: GeneralFilters;
     @Field(
       /* istanbul ignore next */
@@ -101,6 +102,7 @@ export function filterExpressionInputFactory<Entity>(
   class FilterNumber implements INumberFilterModel {
     @HideField()
     filterType!: FilterType.NUMBER;
+    @Field(() => GeneralFilters)
     type!: GeneralFilters;
     @Field(
       /* istanbul ignore next */
@@ -115,6 +117,7 @@ export function filterExpressionInputFactory<Entity>(
   class FilterDate implements DateFilterModel {
     @HideField()
     filterType!: FilterType.DATE;
+    @Field(() => GeneralFilters)
     type!: GeneralFilters;
     @Field(
       /* istanbul ignore next */
@@ -129,6 +132,7 @@ export function filterExpressionInputFactory<Entity>(
   class FilterSet implements ISetFilterModel {
     @HideField()
     filterType!: FilterType.SET;
+    @Field(() => [String])
     values!: string[];
     @Field(
       /* istanbul ignore next */
@@ -137,11 +141,13 @@ export function filterExpressionInputFactory<Entity>(
     field!: string;
   }
 
+  @InputType(`${entityModel.name}FilterInput`, {
+    description: 'Filter expression input',
+  })
   /**
    * Since union for input types are not possible yet, we need this type
    * @see https://github.com/graphql/graphql-spec/issues/488
    */
-  @InputType(`${entityModel.name}FilterInput`)
   class FilterExpressionProperty implements IFilterExpressionsProperty {
     @Field(
       /* istanbul ignore next */

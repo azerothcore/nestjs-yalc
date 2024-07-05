@@ -33,7 +33,7 @@ https://drive.google.com/file/d/1h2Te2SZhuIp-PxElkW99YquYa_VChfH3/view?usp=shari
 
 - The code below needs the `@nestjs/graphql` plugin installed with the following configurations:
 
-- **All the examples below are contained in `examples/skeleton-module` folder available in this repo.** It's a fully working module that you can import in your system to test it.
+- **All the examples below are contained in `platform-kit/apps/user` folder available in this repo.** It's a fully working module that you can import in your system to test it.
 
 This is used to avoid defining graphql `@Field` decorators on property types that can be detected automatically (read the NestJS doc to know more about it)
 
@@ -188,7 +188,7 @@ Example (`skeleton-user.entity.ts`):
 export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
-  @ModelField({ gqlType: returnValue(UUIDScalar), isRequired: true })
+  @ModelField({ gqlType: () => UUIDScalar, isRequired: true })
   @PrimaryColumn('varchar', { name: 'guid', length: 36 })
   guid: string;
 
@@ -311,7 +311,7 @@ export class SkeletonUserType extends SkeletonUser {
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
   @ModelField({
-    gqlType: returnValue(UUIDScalar),
+    gqlType: () => UUIDScalar,
     gqlOptions: {
       name: 'ID',
       description: 'The user ID generated with UUID',
@@ -524,7 +524,7 @@ getResourceGrid: {
           filterCondition: GeneralFilters.CONTAINS,
           filterType: FilterType.TEXT,
           options: {
-            type: returnValue(String),
+            type: () => String,
             nullable: true,
           },
         },
@@ -532,7 +532,7 @@ getResourceGrid: {
           filterCondition: GeneralFilters.CONTAINS,
           filterType: FilterType.TEXT,
           options: {
-            type: returnValue(String),
+            type: () => String,
             nullable: true,
           },
         },
@@ -566,7 +566,7 @@ Example:
         lowerCaseEmail: {
           gqlOptions: {
             description: 'Force the email to be in lowercase',
-            type: returnValue(Boolean),
+            type: () => Boolean,
             defaultValue: true,
             nullable: true,
           },
@@ -657,7 +657,7 @@ export const skeletonUserServiceFactory = (
 and then the resolver:
 
 ```typescript
-@Resolver(returnValue(SkeletonUserType))
+@Resolver(() => SkeletonUserType)
 export class SkeletonUserResolver extends resolverFactory({
   entityModel: SkeletonUser,
   dto: SkeletonUserType,
@@ -718,7 +718,7 @@ export class SkeletonUserResolver extends resolverFactory({
   }
 
   @UseGuards(RoleAuth([RoleEnum.PUBLIC]))
-  @Mutation(returnValue(String), {
+  @Mutation(() => String, {
     description:
       'Reset user password with a random one and send the new value back.',
   })

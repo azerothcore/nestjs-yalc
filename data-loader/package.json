@@ -4,6 +4,11 @@
   "type": "module",
   "description": "",
   "main": "src/index.ts",
+  "custom": {
+    "nest": {
+      "type": "library"
+    }
+  },
   "exports": {
     ".": "./src/index.ts",
     "./*.js": "./src/*.ts",
