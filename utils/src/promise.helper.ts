@@ -1,3 +1,4 @@
+import { AnyFunction } from '@nestjs-yalc/types/globals.d.js';
 import * as pMap from 'p-map';
 
 export const PROMISE_CONCURRENCY_LIMIT = 1000;
@@ -27,10 +28,18 @@ export function promiseMap<Element, NewElement>(
  */
 export class PromiseTracker {
   private promises: Promise<any>[] = [];
+  private deferred: AnyFunction[] = [];
 
   add(promise: Promise<any>) {
     this.promises.push(promise);
     void promise.finally(() => this.remove(promise));
+  }
+
+  /**
+   * @param deferred - A function that will be executed after all promises are resolved.
+   */
+  addDeferred(deferred: AnyFunction) {
+    this.deferred.push(deferred);
   }
 
   private remove(promise: Promise<any>) {
@@ -40,6 +49,8 @@ export class PromiseTracker {
 
   async waitForAll() {
     await Promise.all(this.promises);
+
+    await Promise.all(this.deferred.map((d) => d()));
   }
 }
 

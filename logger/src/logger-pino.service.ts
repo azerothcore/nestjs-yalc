@@ -1,16 +1,23 @@
-import { LogLevel } from '@nestjs/common';
+import { LogLevel, OnApplicationShutdown } from '@nestjs/common';
 import { pino, Logger, stdTimeFunctions } from 'pino';
 import {
   type IImprovedLoggerOptions,
   LoggerAbstractService,
 } from './logger-abstract.service.js';
 import { maskDataInObject } from './logger.helper.js';
+import { globalPromiseTracker } from '@nestjs-yalc/utils/promise.helper.js';
+import { SonicBoom } from 'sonic-boom';
 
 let logger: Logger;
 
 export const FLUSH_INTERVAL = 10000;
 
-export class PinoLogger extends LoggerAbstractService {
+export class PinoLogger
+  extends LoggerAbstractService
+  implements OnApplicationShutdown
+{
+  destination?: SonicBoom;
+
   getLogger(): Logger {
     return logger;
   }
@@ -34,7 +41,7 @@ export class PinoLogger extends LoggerAbstractService {
             },
             message,
           ),
-        error: (message, trace, options) =>
+        error: (message, trace, options) => {
           logger.error(
             {
               context: options?.context ?? context,
@@ -43,7 +50,8 @@ export class PinoLogger extends LoggerAbstractService {
               trace,
             },
             message,
-          ),
+          );
+        },
         debug: (message, options) =>
           logger.debug(
             {
@@ -79,7 +87,7 @@ export class PinoLogger extends LoggerAbstractService {
     );
 
     if (!logger) {
-      const dest = pino.destination({ sync: false });
+      this.destination = pino.destination({ sync: false });
       logger = pino(
         {
           // base: {
@@ -97,7 +105,7 @@ export class PinoLogger extends LoggerAbstractService {
           },
           timestamp: stdTimeFunctions.isoTime,
         },
-        dest,
+        this.destination,
       );
     }
 
@@ -127,5 +135,25 @@ export class PinoLogger extends LoggerAbstractService {
     // process.on('SIGINT', () => handler(null, 'SIGINT'));
     // process.on('SIGQUIT', () => handler(null, 'SIGQUIT'));
     // process.on('SIGTERM', () => handler(null, 'SIGTERM'));
+
+    globalPromiseTracker.addDeferred(this.flush);
+  }
+
+  async onApplicationShutdown() {
+    await this.flush();
+  }
+
+  private async flush() {
+    this.verbose?.('Flushing logger');
+    this.destination?.flushSync();
+    return new Promise((resolve, reject) => {
+      logger.flush((err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve('Logger flushed successfully');
+        }
+      });
+    });
   }
 }

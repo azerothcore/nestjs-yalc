@@ -113,4 +113,23 @@ describe('Pino logger service test', () => {
 
     expect(method).toHaveBeenCalled();
   });
+
+  it('Test on application shutdown', async () => {
+    const method = jest.spyOn(pino, 'info');
+    logger.log('test');
+    await logger.onApplicationShutdown();
+    expect(method).toHaveBeenCalledWith({ context: 'test' }, 'test');
+  });
+
+  it('Test flush with error', async () => {
+    const method = jest.spyOn(pino, 'flush');
+    method.mockImplementation((callback: any) => {
+      callback(new Error('test'));
+    });
+
+    expect(
+      async () => await logger.onApplicationShutdown(),
+    ).rejects.toThrowError();
+    expect(method).toHaveBeenCalled();
+  });
 });
