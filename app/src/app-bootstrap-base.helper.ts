@@ -45,11 +45,11 @@ export const getMainBootstrappedApp = <
     NestFastifyApplication | INestApplicationContext
   >,
 >(): TApp | null => {
-  if (getBootstrappedApps().entries.length === 0) {
+  if (getBootstrappedApps().size === 0) {
     return null;
   }
 
-  return getBootstrappedApps().values().next().value;
+  return getBootstrappedApps().entries().next().value;
 };
 
 export abstract class BaseAppBootstrap<
@@ -71,7 +71,6 @@ export abstract class BaseAppBootstrap<
       options?.globalsOptions,
     );
 
-    const bootstrappedApps = getBootstrappedApps();
     const bootstrappedApp = getMainBootstrappedApp();
 
     if (bootstrappedApp && !options?.globalsOptions?.skipMultiServerCheck) {
@@ -80,7 +79,7 @@ export abstract class BaseAppBootstrap<
       );
     }
 
-    bootstrappedApps.add(this);
+    getBootstrappedApps().add(this);
   }
 
   async initApp(options?: {
@@ -103,6 +102,16 @@ export abstract class BaseAppBootstrap<
       const closeRes = await originalCloseFn();
       getBootstrappedApps().delete(this);
       return closeRes;
+    };
+
+    /**
+     * Monkey patch the init method to set the isClosed flag
+     */
+    const originalInitFn = this.app.init.bind(this.app);
+    this.app.init = async () => {
+      this.isClosed = false;
+      getBootstrappedApps().add(this);
+      return originalInitFn();
     };
 
     return this;
@@ -134,6 +143,7 @@ export abstract class BaseAppBootstrap<
 
     await this.app?.close();
 
+    getBootstrappedApps().delete(this);
     this.isClosed = true;
   }
 

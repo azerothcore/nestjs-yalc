@@ -10,7 +10,7 @@ import {
 } from '@jest/globals';
 
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { DynamicModule, INestApplicationContext } from '@nestjs/common';
+import { DynamicModule, INestApplicationContext, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
   curriedExecuteStandaloneFunction,
@@ -18,6 +18,24 @@ import {
 } from '../app.helper.js';
 import { getBootstrappedApps } from '../app-bootstrap-base.helper.js';
 import { AppBootstrap } from '../app-bootstrap.helper.js';
+import { yalcBaseAppModuleMetadataFactory } from '../base-app-module.helper.js';
+import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
+
+@Module(
+  yalcBaseAppModuleMetadataFactory(TestModule1, 'test1', {
+    configFactory: () => ({}),
+    logger: true,
+  }),
+)
+class TestModule1 {}
+
+@Module(
+  yalcBaseAppModuleMetadataFactory(TestModule2, 'test2', {
+    configFactory: () => ({}),
+    logger: true,
+  }),
+)
+class TestModule2 {}
 
 describe('test standalone app functions', () => {
   let mockedModule: DeepMocked<DynamicModule>;
@@ -27,14 +45,14 @@ describe('test standalone app functions', () => {
     jest.resetAllMocks();
     mockedServiceFunction = jest.fn(() => 'Test');
 
-    mockedModule = createMock<DynamicModule>({});
+    mockedModule = createMock<DynamicModule>({
+      imports: [],
+    });
 
     const mockedCreateApplicationContext = jest.spyOn(
       NestFactory,
       'createApplicationContext',
     );
-
-    getBootstrappedApps().shift();
 
     mockedCreateApplicationContext.mockImplementation(
       () =>
@@ -42,6 +60,11 @@ describe('test standalone app functions', () => {
           get: mockedServiceFunction,
         }) as any,
     );
+  });
+
+  afterEach(() => {
+    getBootstrappedApps().forEach((app) => app.closeApp());
+    getBootstrappedApps().clear();
   });
 
   it('should run executeStandaloneFunction', async () => {
@@ -95,17 +118,36 @@ describe('test standalone app functions', () => {
   });
 
   it('should trigger an error if we bootstrap multiple servers', async () => {
-    new AppBootstrap('test', mockedModule);
+    await new AppBootstrap('test1', TestModule1).initApp();
 
-    await expect(() => new AppBootstrap('test2', mockedModule)).toThrowError();
+    let error: any = null;
+    try {
+      await new AppBootstrap('test2', TestModule2, {}).initApp();
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      error = e;
+    }
+
+    await expect(error).not.toBe(null);
   });
 
   it('should not trigger an error if we bootstrap multiple servers with the skip option', async () => {
-    new AppBootstrap('test', mockedModule, { skipMultiServerCheck: true });
+    await new AppBootstrap('test1', TestModule1, {
+      skipMultiServerCheck: true,
+    }).initApp();
 
-    await expect(
-      () =>
-        new AppBootstrap('test2', mockedModule, { skipMultiServerCheck: true }),
-    ).not.toThrowError();
+    let error: any = null;
+    try {
+      await new AppBootstrap('test2', TestModule2, {
+        skipMultiServerCheck: true,
+      }).initApp();
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      error = e;
+    }
+
+    await expect(error).toBe(null);
   });
 });
