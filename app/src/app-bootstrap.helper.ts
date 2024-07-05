@@ -55,7 +55,7 @@ export class AppBootstrap<
     await this.initApp(options);
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
-      await this.getApp().close();
+      await this.closeApp();
       process.exit(0);
     }
 
@@ -91,7 +91,7 @@ export class AppBootstrap<
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
       this.loggerService?.log('Dry run, exiting...');
-      await this.getApp().close();
+      await this.closeApp();
       process.exit(0);
     }
 
@@ -231,7 +231,7 @@ export class AppBootstrap<
       // eslint-disable-next-line no-console
       console.debug('Hot reload enabled. Reloading...');
       hmr.accept();
-      hmr.dispose(() => this.getApp().close());
+      hmr.dispose(() => this.closeApp());
     }
   }
 }

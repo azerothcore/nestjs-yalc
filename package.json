@@ -100,7 +100,8 @@
   },
   "overrides": {
     "mysql2": "^3.9.4",
-    "typeorm": "^0.3.14"
+    "typeorm": "^0.3.14",
+    "fastify": "4.18.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",

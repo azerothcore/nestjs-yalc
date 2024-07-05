@@ -10,12 +10,32 @@ import {
 } from '@jest/globals';
 
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { DynamicModule, INestApplicationContext } from '@nestjs/common';
+import { DynamicModule, INestApplicationContext, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
   curriedExecuteStandaloneFunction,
   executeStandaloneFunction,
 } from '../app.helper.js';
+import { getBootstrappedApps } from '../app-bootstrap-base.helper.js';
+import { AppBootstrap } from '../app-bootstrap.helper.js';
+import { yalcBaseAppModuleMetadataFactory } from '../base-app-module.helper.js';
+import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
+
+@Module(
+  yalcBaseAppModuleMetadataFactory(TestModule1, 'test1', {
+    configFactory: () => ({}),
+    logger: true,
+  }),
+)
+class TestModule1 {}
+
+@Module(
+  yalcBaseAppModuleMetadataFactory(TestModule2, 'test2', {
+    configFactory: () => ({}),
+    logger: true,
+  }),
+)
+class TestModule2 {}
 
 describe('test standalone app functions', () => {
   let mockedModule: DeepMocked<DynamicModule>;
@@ -25,7 +45,9 @@ describe('test standalone app functions', () => {
     jest.resetAllMocks();
     mockedServiceFunction = jest.fn(() => 'Test');
 
-    mockedModule = createMock<DynamicModule>({});
+    mockedModule = createMock<DynamicModule>({
+      imports: [],
+    });
 
     const mockedCreateApplicationContext = jest.spyOn(
       NestFactory,
@@ -40,6 +62,11 @@ describe('test standalone app functions', () => {
     );
   });
 
+  afterEach(() => {
+    getBootstrappedApps().forEach((app) => app.closeApp());
+    getBootstrappedApps().clear();
+  });
+
   it('should run executeStandaloneFunction', async () => {
     const mockedFunction = jest.fn(async (service: any) => {
       return service;
@@ -50,7 +77,7 @@ describe('test standalone app functions', () => {
       mockedServiceFunction,
       mockedFunction,
       {},
-      {closeApp: true}
+      { closeApp: true },
     );
 
     expect(mockedFunction).toHaveBeenCalledTimes(1);
@@ -88,5 +115,39 @@ describe('test standalone app functions', () => {
     );
 
     expect(mockedFunction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should trigger an error if we bootstrap multiple servers', async () => {
+    await new AppBootstrap('test1', TestModule1).initApp();
+
+    let error: any = null;
+    try {
+      await new AppBootstrap('test2', TestModule2, {}).initApp();
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      error = e;
+    }
+
+    await expect(error).not.toBe(null);
+  });
+
+  it('should not trigger an error if we bootstrap multiple servers with the skip option', async () => {
+    await new AppBootstrap('test1', TestModule1, {
+      skipMultiServerCheck: true,
+    }).initApp();
+
+    let error: any = null;
+    try {
+      await new AppBootstrap('test2', TestModule2, {
+        skipMultiServerCheck: true,
+      }).initApp();
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      error = e;
+    }
+
+    await expect(error).toBe(null);
   });
 });
