@@ -16,6 +16,8 @@ import {
   curriedExecuteStandaloneFunction,
   executeStandaloneFunction,
 } from '../app.helper.js';
+import { getBootstrappedApps } from '../app-bootstrap-base.helper.js';
+import { AppBootstrap } from '../app-bootstrap.helper.js';
 
 describe('test standalone app functions', () => {
   let mockedModule: DeepMocked<DynamicModule>;
@@ -31,6 +33,8 @@ describe('test standalone app functions', () => {
       NestFactory,
       'createApplicationContext',
     );
+
+    getBootstrappedApps().shift();
 
     mockedCreateApplicationContext.mockImplementation(
       () =>
@@ -50,7 +54,7 @@ describe('test standalone app functions', () => {
       mockedServiceFunction,
       mockedFunction,
       {},
-      {closeApp: true}
+      { closeApp: true },
     );
 
     expect(mockedFunction).toHaveBeenCalledTimes(1);
@@ -88,5 +92,20 @@ describe('test standalone app functions', () => {
     );
 
     expect(mockedFunction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should trigger an error if we bootstrap multiple servers', async () => {
+    new AppBootstrap('test', mockedModule);
+
+    await expect(() => new AppBootstrap('test2', mockedModule)).toThrowError();
+  });
+
+  it('should not trigger an error if we bootstrap multiple servers with the skip option', async () => {
+    new AppBootstrap('test', mockedModule, { skipMultiServerCheck: true });
+
+    await expect(
+      () =>
+        new AppBootstrap('test2', mockedModule, { skipMultiServerCheck: true }),
+    ).not.toThrowError();
   });
 });

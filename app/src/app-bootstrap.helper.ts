@@ -23,6 +23,7 @@ import {
   IGlobalOptions,
 } from './app-bootstrap-base.helper.js';
 import { getEnvLoggerLevels } from '@nestjs-yalc/logger/logger.helper.js';
+import { globalPromiseTracker } from '@nestjs-yalc/utils/promise.helper.js';
 
 export interface ICreateOptions {
   enableSwagger?: boolean;
@@ -79,6 +80,21 @@ export class AppBootstrap<
       fastifyInstance: this.fastifyInstance,
       createOptions: options?.createOptions,
     });
+  }
+
+  async closeApp() {
+    await this.cleanup();
+
+    await this.app?.close();
+  }
+
+  async cleanup() {
+    /**
+     * When running behind a lambda, we have to await for all the promises that have been added to the global promise tracker
+     * to avoid them being killed by the lambda
+     * @see - https://stackoverflow.com/questions/64688812/running-tasks-in-aws-lambda-background
+     */
+    await globalPromiseTracker.waitForAll();
   }
 
   async initSetup(options?: {

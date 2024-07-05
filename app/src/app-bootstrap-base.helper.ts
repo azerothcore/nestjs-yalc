@@ -26,7 +26,30 @@ export interface IGlobalOptions {
   extraImports?: NonNullable<DynamicModule['imports']>;
   eventModuleClass?: typeof EventModule;
   logger?: typeof LoggerServiceFactory;
+
+  /**
+   * This is used to avoid bootstrapping a multi-server app
+   */
+  skipMultiServerCheck?: boolean;
 }
+
+const bootstrappedApps: any[] = [];
+
+export const getBootstrappedApps = () => {
+  return bootstrappedApps;
+};
+
+export const getMainBootstrappedApp = <
+  TApp extends BaseAppBootstrap<
+    NestFastifyApplication | INestApplicationContext
+  >,
+>(): TApp | null => {
+  if (getBootstrappedApps().length === 0) {
+    return null;
+  }
+
+  return getBootstrappedApps()[0];
+};
 
 export abstract class BaseAppBootstrap<
   TAppType extends NestFastifyApplication | INestApplicationContext,
@@ -45,6 +68,15 @@ export abstract class BaseAppBootstrap<
       [appModule, ...(options?.globalsOptions?.extraImports ?? [])],
       options?.globalsOptions,
     );
+
+    const bootstrappedApp = getMainBootstrappedApp();
+    if (bootstrappedApp && !options?.globalsOptions?.skipMultiServerCheck) {
+      throw new Error(
+        'You are trying to bootstrap multiple servers in the same process. This is not allowed. Use a different process for each server',
+      );
+    }
+
+    getBootstrappedApps().push(this);
   }
 
   async initApp(options?: {
