@@ -8,7 +8,7 @@ import {
 } from '@jest/globals';
 
 import { Logger } from 'pino';
-import { PinoLogger, FLUSH_INTERVAL } from '../index.js';
+import { PinoLogger, FLUSH_INTERVAL, flush } from '../index.js';
 import { LOG_LEVEL_ALL } from '../logger.enum.js';
 
 const logOptions = {
@@ -18,12 +18,14 @@ const logOptions = {
 };
 
 describe('Pino logger service test', () => {
-  let logger: PinoLogger;
   let pino: Logger;
+  const container: { logger?: PinoLogger } = {
+    logger: new PinoLogger('test', LOG_LEVEL_ALL),
+  };
 
   beforeEach(async () => {
-    logger = new PinoLogger('test', LOG_LEVEL_ALL);
-    pino = logger.getLogger();
+    container.logger = new PinoLogger('test', LOG_LEVEL_ALL);
+    pino = container.logger?.getLogger();
   });
 
   afterEach(() => {
@@ -32,21 +34,21 @@ describe('Pino logger service test', () => {
 
   it('Test log', async () => {
     const method = jest.spyOn(pino, 'info');
-    logger.log('test');
+    container.logger?.log('test');
 
     expect(method).toHaveBeenCalled();
   });
 
   it('Test log with options', async () => {
     const method = jest.spyOn(pino, 'info');
-    logger.log('info', logOptions);
+    container.logger?.log('info', logOptions);
 
     expect(method).toHaveBeenCalled();
   });
 
   it('Test error', async () => {
     const method = jest.spyOn(pino, 'error');
-    logger.error('error', 'trace');
+    container.logger?.error('error', 'trace');
 
     expect(method).toHaveBeenCalled();
     // expect(method).toHaveBeenCalledWith({ context: 'test' }, 'error trace');
@@ -54,42 +56,42 @@ describe('Pino logger service test', () => {
 
   it('Test error with options', async () => {
     const method = jest.spyOn(pino, 'error');
-    logger.error('error', undefined, logOptions);
+    container.logger?.error('error', undefined, logOptions);
 
     expect(method).toHaveBeenCalled();
   });
 
   it('Test warn', async () => {
     const method = jest.spyOn(pino, 'warn');
-    logger.warn('warn');
+    container.logger?.warn('warn');
 
     expect(method).toHaveBeenCalled();
   });
 
   it('Test warn with options', async () => {
     const method = jest.spyOn(pino, 'warn');
-    logger.warn('warn', logOptions);
+    container.logger?.warn('warn', logOptions);
 
     expect(method).toHaveBeenCalled();
   });
 
   it('Test debug', async () => {
     const method = jest.spyOn(pino, 'debug');
-    logger.debug?.('debug');
+    container.logger?.debug?.('debug');
 
     expect(method).toHaveBeenCalled();
   });
 
   it('Test debug with options', async () => {
     const method = jest.spyOn(pino, 'debug');
-    logger.debug?.('debug', logOptions);
+    container.logger?.debug?.('debug', logOptions);
 
     expect(method).toHaveBeenCalled();
   });
 
   it('Test verbose with options', async () => {
     const method = jest.spyOn(pino, 'trace');
-    logger.verbose?.('verbose', logOptions);
+    container.logger?.verbose?.('verbose', logOptions);
 
     expect(method).toHaveBeenCalled();
   });
@@ -116,9 +118,21 @@ describe('Pino logger service test', () => {
 
   it('Test on application shutdown', async () => {
     const method = jest.spyOn(pino, 'info');
-    logger.log('test');
-    await logger.onApplicationShutdown();
+    container.logger?.log('test');
+    await container.logger?.onApplicationShutdown();
     expect(method).toHaveBeenCalledWith({ context: 'test' }, 'test');
+  });
+
+  it('Test flush when logger has been destroyed', async () => {
+    const method = jest.spyOn(pino, 'flush');
+    method.mockImplementation((callback: any) => {
+      callback();
+    });
+
+    delete container.logger;
+    await flush();
+    expect(container.logger).toBeUndefined();
+    expect(method).toHaveBeenCalled();
   });
 
   it('Test flush with error', async () => {
@@ -128,7 +142,7 @@ describe('Pino logger service test', () => {
     });
 
     expect(
-      async () => await logger.onApplicationShutdown(),
+      async () => await container.logger?.onApplicationShutdown(),
     ).rejects.toThrowError();
     expect(method).toHaveBeenCalled();
   });

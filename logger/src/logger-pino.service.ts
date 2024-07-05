@@ -9,6 +9,7 @@ import { globalPromiseTracker } from '@nestjs-yalc/utils/promise.helper.js';
 import { SonicBoom } from 'sonic-boom';
 
 let logger: Logger;
+let destination: SonicBoom;
 
 export const FLUSH_INTERVAL = 10000;
 
@@ -16,8 +17,6 @@ export class PinoLogger
   extends LoggerAbstractService
   implements OnApplicationShutdown
 {
-  destination?: SonicBoom;
-
   getLogger(): Logger {
     return logger;
   }
@@ -87,7 +86,7 @@ export class PinoLogger
     );
 
     if (!logger) {
-      this.destination = pino.destination({ sync: false });
+      destination = pino.destination({ sync: false });
       logger = pino(
         {
           // base: {
@@ -105,7 +104,7 @@ export class PinoLogger
           },
           timestamp: stdTimeFunctions.isoTime,
         },
-        this.destination,
+        destination,
       );
     }
 
@@ -136,24 +135,28 @@ export class PinoLogger
     // process.on('SIGQUIT', () => handler(null, 'SIGQUIT'));
     // process.on('SIGTERM', () => handler(null, 'SIGTERM'));
 
-    globalPromiseTracker.addDeferred(this.flush);
+    globalPromiseTracker.addDeferred(flush);
   }
 
   async onApplicationShutdown() {
-    await this.flush();
+    await flush();
   }
+}
 
-  private async flush() {
-    this.verbose?.('Flushing logger');
-    this.destination?.flushSync();
-    return new Promise((resolve, reject) => {
-      logger.flush((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve('Logger flushed successfully');
-        }
-      });
+/**
+ * We keep this function outside of the class such that we do not rely
+ * on the class instance that might be destroyed before the flush is called.
+ */
+export function flush() {
+  logger.trace?.('Flushing logger');
+  destination?.flushSync();
+  return new Promise((resolve, reject) => {
+    logger.flush((err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve('Logger flushed successfully');
+      }
     });
-  }
+  });
 }
