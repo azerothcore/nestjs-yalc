@@ -49,7 +49,7 @@ export const getMainBootstrappedApp = <
     return null;
   }
 
-  return getBootstrappedApps().entries().next().value;
+  return getBootstrappedApps().values().next().value;
 };
 
 export abstract class BaseAppBootstrap<

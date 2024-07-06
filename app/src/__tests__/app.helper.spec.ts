@@ -16,7 +16,10 @@ import {
   curriedExecuteStandaloneFunction,
   executeStandaloneFunction,
 } from '../app.helper.js';
-import { getBootstrappedApps } from '../app-bootstrap-base.helper.js';
+import {
+  getBootstrappedApps,
+  getMainBootstrappedApp,
+} from '../app-bootstrap-base.helper.js';
 import { AppBootstrap } from '../app-bootstrap.helper.js';
 import { yalcBaseAppModuleMetadataFactory } from '../base-app-module.helper.js';
 import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
@@ -149,5 +152,13 @@ describe('test standalone app functions', () => {
     }
 
     await expect(error).toBe(null);
+  });
+
+  it('should get the main bootstrapped app', async () => {
+    const app = await new AppBootstrap('test1', TestModule1).initApp();
+
+    const mainApp = getMainBootstrappedApp();
+
+    expect(mainApp === app).toBe(true);
   });
 });
