@@ -58,7 +58,7 @@ export abstract class BaseAppBootstrap<
   protected app?: TAppType;
   protected loggerService!: LoggerService;
   protected module: Type<any> | DynamicModule;
-  private isClosed = false;
+  protected isClosed = false;
 
   constructor(
     protected appAlias: string,
@@ -98,9 +98,8 @@ export abstract class BaseAppBootstrap<
      */
     const originalCloseFn = this.app.close.bind(this.app);
     this.app.close = async () => {
-      this.isClosed = true;
       const closeRes = await originalCloseFn();
-      getBootstrappedApps().delete(this);
+      this.closeCleanup();
       return closeRes;
     };
 
@@ -111,10 +110,25 @@ export abstract class BaseAppBootstrap<
     this.app.init = async () => {
       this.isClosed = false;
       getBootstrappedApps().add(this);
-      return originalInitFn();
+      let initRes;
+      try {
+        initRes = await originalInitFn();
+      } catch (error) {
+        this.closeCleanup();
+        throw error;
+      }
+      return initRes;
     };
 
     return this;
+  }
+
+  /**
+   * This method is used to cleanup the app and remove it from the global set of bootstrapped apps
+   */
+  closeCleanup() {
+    this.isClosed = true;
+    getBootstrappedApps().delete(this);
   }
 
   isAppClosed() {
@@ -143,8 +157,7 @@ export abstract class BaseAppBootstrap<
 
     await this.app?.close();
 
-    getBootstrappedApps().delete(this);
-    this.isClosed = true;
+    this.closeCleanup();
   }
 
   async cleanup() {

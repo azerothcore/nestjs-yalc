@@ -85,9 +85,14 @@ export class AppBootstrap<
     createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
-    await this.applyBootstrapGlobals(options?.createOptions);
+    try {
+      await this.applyBootstrapGlobals(options?.createOptions);
 
-    await this.getApp().init();
+      await this.getApp().init();
+    } catch (err) {
+      this.closeCleanup();
+      throw new Error('Process aborted');
+    }
 
     if (envIsTrue(process.env.APP_DRY_RUN) === true) {
       this.loggerService?.log('Dry run, exiting...');
@@ -117,6 +122,7 @@ export class AppBootstrap<
         },
       );
     } catch (err) {
+      this.closeCleanup();
       // eslint-disable-next-line no-console
       console.error(clc.red('Failed to create app'), clc.red(err));
       throw new Error('Process aborted');

@@ -40,6 +40,22 @@ class TestModule1 {}
 )
 class TestModule2 {}
 
+@Module(
+  yalcBaseAppModuleMetadataFactory(BrokenModule, 'brokenModule', {
+    configFactory: () => ({}),
+    logger: true,
+    providers: [
+      {
+        provide: 'brokenService',
+        useFactory: () => {
+          throw new Error('Test');
+        },
+      },
+    ],
+  }),
+)
+class BrokenModule {}
+
 describe('test standalone app functions', () => {
   let mockedModule: DeepMocked<DynamicModule>;
   let mockedServiceFunction: jest.Mock<() => string>;
@@ -133,6 +149,25 @@ describe('test standalone app functions', () => {
     }
 
     await expect(error).not.toBe(null);
+  });
+
+  it('should not trigger an error when the first app cannot be initialized because of an error', async () => {
+    try {
+      await new AppBootstrap('brokenModule', BrokenModule).initApp();
+    } catch (e: any) {
+      // nothing
+    }
+
+    let error: any = null;
+    try {
+      await new AppBootstrap('test2', TestModule2, {}).initApp();
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      error = e;
+    }
+
+    await expect(error).toBe(null);
   });
 
   it('should not trigger an error if we bootstrap multiple servers with the skip option', async () => {

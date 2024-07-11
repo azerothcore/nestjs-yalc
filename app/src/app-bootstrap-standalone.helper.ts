@@ -49,6 +49,7 @@ export class StandaloneAppBootstrap<
         logger: getEnvLoggerLevels(),
       });
     } catch (err) {
+      this.closeCleanup();
       // eslint-disable-next-line no-console
       console.error(clc.red('Failed to create app'), clc.red(err));
       throw new Error('Process aborted');
