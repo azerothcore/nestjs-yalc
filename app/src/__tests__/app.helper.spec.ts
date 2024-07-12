@@ -189,6 +189,23 @@ describe('test standalone app functions', () => {
     await expect(error).toBe(null);
   });
 
+  it('should not trigger an error if we bootstrap multiple servers with the env variable', async () => {
+    process.env.APP_SKIP_MULTISERVER_CHECK = 'true';
+
+    await new AppBootstrap('test1', TestModule1).initApp();
+
+    let error: any = null;
+    try {
+      await new AppBootstrap('test2', TestModule2).initApp();
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      error = e;
+    }
+
+    await expect(error).toBe(null);
+  });
+
   it('should get the main bootstrapped app', async () => {
     const app = await new AppBootstrap('test1', TestModule1).initApp();
 

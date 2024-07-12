@@ -73,9 +73,13 @@ export abstract class BaseAppBootstrap<
 
     const bootstrappedApp = getMainBootstrappedApp();
 
-    if (bootstrappedApp && !options?.globalsOptions?.skipMultiServerCheck) {
+    if (
+      bootstrappedApp &&
+      !options?.globalsOptions?.skipMultiServerCheck &&
+      process.env.APP_SKIP_MULTISERVER_CHECK !== 'true'
+    ) {
       throw new Error(
-        'You are trying to bootstrap multiple servers in the same process. This is not allowed. Use a different process for each server',
+        `You are trying to bootstrap multiple servers (${bootstrappedApp.appAlias}) in the same process. This is not allowed. Use a different process for each server`,
       );
     }
 
