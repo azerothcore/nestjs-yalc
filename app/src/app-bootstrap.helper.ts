@@ -179,7 +179,9 @@ export class AppBootstrap<
         this.getApp(),
         this.buildSwaggerConfig().build(),
       );
-      SwaggerModule.setup('api', this.getApp(), document);
+      SwaggerModule.setup('api', this.getApp(), document, {
+        jsonDocumentUrl: '/api/json',
+      });
     }
 
     useContainer(this.getApp().select(this.getModule()), {
