@@ -113,3 +113,8 @@ type HTTPMethods =
   | 'put'
   | 'OPTIONS'
   | 'options';
+
+type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+type DeepWritable<T> = {
+  -readonly [P in keyof T]: DeepWritable<T[P]>;
+};
