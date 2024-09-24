@@ -396,6 +396,10 @@ export const DefaultErrorMixin = <
         this.message = this.betterResponse.message;
       }
 
+      if (info.config) {
+        this.eventPayload.config = info.config;
+      }
+
       this.eventPayload = {
         ...this.eventPayload,
         data: this.data,

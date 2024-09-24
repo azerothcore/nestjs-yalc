@@ -220,6 +220,7 @@ export function event<
       if (isDefaultErrorMixin(errorInstance)) {
         errorInstance.mergeErrorInfo({
           ...rest,
+          config,
           data: receivedData,
         });
         errorPayload = errorInstance.getEventPayload();
