@@ -23,6 +23,9 @@ export function getLogLevelByStatus(statusCode: number) {
   return loggerLevel;
 }
 
+/**
+ * Check if the event will trigger an error log
+ */
 export function isErrorEvent(options: IErrorEventOptions) {
   if (!options.errorClass) {
     return false;
