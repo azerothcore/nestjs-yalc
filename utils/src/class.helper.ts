@@ -1,7 +1,7 @@
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 
 // Check if the class is a native class (like Error, Array, etc.)
-export function isNativeClass<T>(
+export function isNativeClass<T = any>(
   func: any,
   className?: string,
 ): func is ClassType<T> {
@@ -13,7 +13,7 @@ export function isNativeClass<T>(
 }
 
 // Check if the class is an ES6-style class
-export function isES6Class<T>(
+export function isES6Class<T = any>(
   func: any,
   className?: string,
 ): func is ClassType<T> {
@@ -25,7 +25,7 @@ export function isES6Class<T>(
 }
 
 // Check if the class is either native or ES6
-export function isClass<T>(
+export function isClass<T = any>(
   func: any,
   className?: string,
 ): func is ClassType<T> {
