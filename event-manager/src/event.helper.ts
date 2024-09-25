@@ -4,6 +4,7 @@ import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import { HttpStatus } from '@nestjs/common';
 import { LogLevel } from 'typeorm';
 import { IErrorEventOptions } from './event.js';
+import { getStatusCodeFromError } from '@nestjs-yalc/utils/http.helper.js';
 
 export function getLogLevelByStatus(statusCode: number) {
   let loggerLevel: LogLevel;
@@ -38,12 +39,32 @@ export function isErrorEvent(options: IErrorEventOptions) {
     return false;
   }
 
+  if (options.errorClass === true) {
+    return true;
+  }
+
+  if (isClass(options.errorClass, DefaultError.name)) {
+    return true;
+  }
+
+  const statusCode = getStatusCodeFromError(options.errorClass);
+  if (statusCode) {
+    return getLogLevelByStatus(statusCode) === LogLevelEnum.ERROR;
+  }
+
+  /**
+   * This is a fallback to handle edge cases but it's slower since
+   * it creates an instance of the error class and should not happen
+   */
+  let error;
+  if (isClass(options.errorClass)) {
+    error = new options.errorClass();
+  } else {
+    error = options.errorClass;
+  }
+
   return (
-    options.errorClass === true ||
-    isClass(options.errorClass, DefaultError.name) ||
-    (!isClass(options.errorClass) &&
-      options.errorClass.getStatus &&
-      getLogLevelByStatus(options.errorClass.getStatus()) ===
-        LogLevelEnum.ERROR)
+    !error.getStatus ||
+    getLogLevelByStatus(error.getStatus()) === LogLevelEnum.ERROR
   );
 }

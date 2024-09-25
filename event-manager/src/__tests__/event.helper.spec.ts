@@ -13,10 +13,33 @@ describe('EventHelper', () => {
   });
 
   it('should return true if the event is an error event', () => {
+    class CustomBadRequestException {
+      getStatus() {
+        return HttpStatus.BAD_REQUEST;
+      }
+    }
+
+    class CustomInternalServerErrorException {
+      getStatus() {
+        return HttpStatus.INTERNAL_SERVER_ERROR;
+      }
+    }
+
     expect(isErrorEvent({})).toBeFalsy();
     expect(isErrorEvent({ errorClass: true })).toBeTruthy();
     expect(isErrorEvent({ errorClass: DefaultError })).toBeTruthy();
-    expect(isErrorEvent({ errorClass: HttpException })).toBeFalsy();
+    expect(isErrorEvent({ errorClass: HttpException })).toBeTruthy();
+    expect(isErrorEvent({ errorClass: Error })).toBeTruthy();
+    expect(isErrorEvent({ errorClass: CustomBadRequestException })).toBeFalsy();
+    expect(
+      isErrorEvent({ errorClass: CustomInternalServerErrorException }),
+    ).toBeTruthy();
+    expect(
+      isErrorEvent({ errorClass: new CustomBadRequestException() }),
+    ).toBeFalsy();
+    expect(
+      isErrorEvent({ errorClass: new CustomInternalServerErrorException() }),
+    ).toBeTruthy();
     expect(
       isErrorEvent({
         errorClass: new HttpException('test', HttpStatus.BAD_REQUEST),

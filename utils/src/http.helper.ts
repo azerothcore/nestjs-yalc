@@ -1,5 +1,29 @@
-import { HttpStatus } from '@nestjs/common';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
+import {
+  BadGatewayException,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  GatewayTimeoutException,
+  GoneException,
+  HttpException,
+  HttpStatus,
+  InternalServerErrorException,
+  MethodNotAllowedException,
+  MisdirectedException,
+  NotAcceptableException,
+  NotFoundException,
+  NotImplementedException,
+  PayloadTooLargeException,
+  PreconditionFailedException,
+  RequestTimeoutException,
+  ServiceUnavailableException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+  UnsupportedMediaTypeException,
+} from '@nestjs/common';
 import { HttpStatusCode } from 'axios';
+import { isClass } from './class.helper.js';
 
 export const HttpStatusCodes = {
   ...HttpStatus,
@@ -104,3 +128,39 @@ export const getHttpStatusDescription = (
 ): string => {
   return httpStatusDescriptions[status] ?? fallbackDescription;
 };
+
+const httpExceptionStatusCodes = {
+  [BadRequestException.name]: HttpStatus.BAD_REQUEST,
+  [UnauthorizedException.name]: HttpStatus.UNAUTHORIZED,
+  [ForbiddenException.name]: HttpStatus.FORBIDDEN,
+  [NotFoundException.name]: HttpStatus.NOT_FOUND,
+  [MethodNotAllowedException.name]: HttpStatus.METHOD_NOT_ALLOWED,
+  [NotAcceptableException.name]: HttpStatus.NOT_ACCEPTABLE,
+  [RequestTimeoutException.name]: HttpStatus.REQUEST_TIMEOUT,
+  [ConflictException.name]: HttpStatus.CONFLICT,
+  [GoneException.name]: HttpStatus.GONE,
+  [PreconditionFailedException.name]: HttpStatus.PRECONDITION_FAILED,
+  [PayloadTooLargeException.name]: HttpStatus.PAYLOAD_TOO_LARGE,
+  [UnsupportedMediaTypeException.name]: HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+  [UnprocessableEntityException.name]: HttpStatus.UNPROCESSABLE_ENTITY,
+  [InternalServerErrorException.name]: HttpStatus.INTERNAL_SERVER_ERROR,
+  [NotImplementedException.name]: HttpStatus.NOT_IMPLEMENTED,
+  [BadGatewayException.name]: HttpStatus.BAD_GATEWAY,
+  [ServiceUnavailableException.name]: HttpStatus.SERVICE_UNAVAILABLE,
+  [GatewayTimeoutException.name]: HttpStatus.GATEWAY_TIMEOUT,
+  [HttpException.name]: HttpStatus.INTERNAL_SERVER_ERROR,
+  [MisdirectedException.name]: HttpStatus.MISDIRECTED,
+};
+
+/**
+ * Function to convert all HttpException based errors classes to their corresponding status code
+ * using a predefined list of status codes
+ */
+export function getStatusCodeFromError(error: ClassType<any> | any) {
+  if (!isClass(error) && error.getStatus) {
+    return error.getStatus();
+  }
+
+  const errorName = error.name;
+  return httpExceptionStatusCodes[errorName] || null;
+}
