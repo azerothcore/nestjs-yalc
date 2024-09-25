@@ -4,10 +4,10 @@ import {
   HttpStatusCodes,
 } from '@nestjs-yalc/utils/http.helper.js';
 import { HttpException } from '@nestjs/common';
-import { AdditionalVerificationNeededException } from '../index.js';
+import { AdditionalVerificationNeededError } from '../index.js';
 
 describe('Verification error', () => {
-  const error = new AdditionalVerificationNeededException();
+  const error = new AdditionalVerificationNeededError();
 
   it('should be defined', () => {
     expect(error).toBeDefined();

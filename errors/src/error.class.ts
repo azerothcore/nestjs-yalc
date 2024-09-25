@@ -10,6 +10,15 @@ import {
   HttpException,
   HttpStatus,
   HttpExceptionOptions,
+  MethodNotAllowedException,
+  NotAcceptableException,
+  GoneException,
+  UnsupportedMediaTypeException,
+  UnprocessableEntityException,
+  NotImplementedException,
+  BadGatewayException,
+  ServiceUnavailableException,
+  GatewayTimeoutException,
 } from '@nestjs/common';
 import { ErrorsEnum } from './error.enum.js';
 import { DefaultErrorBase, IDefaultErrorBaseOptions } from './default.error.js';
@@ -63,6 +72,7 @@ function buildArgsHttpException(
  * Use when the request could not be understood or was missing required parameters.
  */
 export class BadRequestError extends DefaultErrorBase(BadRequestException) {
+  static defaultStatusCode = HttpStatus.BAD_REQUEST;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(...buildArgs(ErrorsEnum.BAD_REQUEST, internalMessage, options));
   }
@@ -72,6 +82,7 @@ export class BadRequestError extends DefaultErrorBase(BadRequestException) {
  * Use when authentication failed or the user does not have permissions for the desired action.
  */
 export class UnauthorizedError extends DefaultErrorBase(UnauthorizedException) {
+  static defaultStatusCode = HttpStatus.UNAUTHORIZED;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(...buildArgs(ErrorsEnum.UNAUTHORIZED, internalMessage, options));
   }
@@ -81,6 +92,7 @@ export class UnauthorizedError extends DefaultErrorBase(UnauthorizedException) {
  * Use when the authenticated user does not have access to the requested resource.
  */
 export class ForbiddenError extends DefaultErrorBase(ForbiddenException) {
+  static defaultStatusCode = HttpStatus.FORBIDDEN;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(...buildArgs(ErrorsEnum.FORBIDDEN, internalMessage, options));
   }
@@ -90,6 +102,7 @@ export class ForbiddenError extends DefaultErrorBase(ForbiddenException) {
  * Use when the requested resource could not be found.
  */
 export class NotFoundError extends DefaultErrorBase(NotFoundException) {
+  static defaultStatusCode = HttpStatus.NOT_FOUND;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(...buildArgs(ErrorsEnum.NOT_FOUND, internalMessage, options));
   }
@@ -99,6 +112,7 @@ export class NotFoundError extends DefaultErrorBase(NotFoundException) {
  * Use when the request could not be completed due to a conflict with the current state of the target resource.
  */
 export class ConflictError extends DefaultErrorBase(ConflictException) {
+  static defaultStatusCode = HttpStatus.CONFLICT;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(...buildArgs(ErrorsEnum.CONFLICT, internalMessage, options));
   }
@@ -110,6 +124,7 @@ export class ConflictError extends DefaultErrorBase(ConflictException) {
 export class InternalServerError extends DefaultErrorBase(
   InternalServerErrorException,
 ) {
+  static defaultStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(
       ...buildArgs(ErrorsEnum.INTERNAL_SERVER_ERROR, internalMessage, options),
@@ -123,13 +138,14 @@ export class InternalServerError extends DefaultErrorBase(
  * Reserved for future use; its utilization is not common.
  */
 export class PaymentRequiredError extends DefaultErrorBase(HttpException) {
+  static defaultStatusCode = HttpStatus.PAYMENT_REQUIRED;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(
       ...buildArgsHttpException(
         ErrorsEnum.PAYMENT_REQUIRED,
         internalMessage,
         options,
-        HttpStatus.PAYMENT_REQUIRED,
+        PaymentRequiredError.defaultStatusCode,
       ),
     );
   }
@@ -138,15 +154,13 @@ export class PaymentRequiredError extends DefaultErrorBase(HttpException) {
 /**
  * Use when an unsupported HTTP method was used for the request.
  */
-export class MethodNotAllowedError extends DefaultErrorBase(HttpException) {
+export class MethodNotAllowedError extends DefaultErrorBase(
+  MethodNotAllowedException,
+) {
+  static defaultStatusCode = HttpStatus.METHOD_NOT_ALLOWED;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(
-      ...buildArgsHttpException(
-        ErrorsEnum.METHOD_NOT_ALLOWED,
-        internalMessage,
-        options,
-        HttpStatus.METHOD_NOT_ALLOWED,
-      ),
+      ...buildArgs(ErrorsEnum.METHOD_NOT_ALLOWED, internalMessage, options),
     );
   }
 }
@@ -154,47 +168,35 @@ export class MethodNotAllowedError extends DefaultErrorBase(HttpException) {
 /**
  * Use when the server cannot produce a response matching the list of acceptable values defined in the request's headers.
  */
-export class NotAcceptableError extends DefaultErrorBase(HttpException) {
+export class NotAcceptableError extends DefaultErrorBase(
+  NotAcceptableException,
+) {
+  static defaultStatusCode = HttpStatus.NOT_ACCEPTABLE;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
-    super(
-      ...buildArgsHttpException(
-        ErrorsEnum.NOT_ACCEPTABLE,
-        internalMessage,
-        options,
-        HttpStatus.NOT_ACCEPTABLE,
-      ),
-    );
+    super(...buildArgs(ErrorsEnum.NOT_ACCEPTABLE, internalMessage, options));
   }
 }
 
 /**
  * Use when the requested resource has been permanently deleted and will not be available again.
  */
-export class GoneError extends DefaultErrorBase(HttpException) {
+export class GoneError extends DefaultErrorBase(GoneException) {
+  static defaultStatusCode = HttpStatus.GONE;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
-    super(
-      ...buildArgsHttpException(
-        ErrorsEnum.GONE,
-        internalMessage,
-        options,
-        HttpStatus.GONE,
-      ),
-    );
+    super(...buildArgs(ErrorsEnum.GONE, internalMessage, options));
   }
 }
 
 /**
  * Use when the request entity has a media type which the server or resource does not support.
  */
-export class UnsupportedMediaTypeError extends DefaultErrorBase(HttpException) {
+export class UnsupportedMediaTypeError extends DefaultErrorBase(
+  UnsupportedMediaTypeException,
+) {
+  static defaultStatusCode = HttpStatus.UNSUPPORTED_MEDIA_TYPE;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(
-      ...buildArgsHttpException(
-        ErrorsEnum.UNSUPPORTED_MEDIA_TYPE,
-        internalMessage,
-        options,
-        HttpStatus.UNSUPPORTED_MEDIA_TYPE,
-      ),
+      ...buildArgs(ErrorsEnum.UNSUPPORTED_MEDIA_TYPE, internalMessage, options),
     );
   }
 }
@@ -202,15 +204,13 @@ export class UnsupportedMediaTypeError extends DefaultErrorBase(HttpException) {
 /**
  * Use when the server understands the content type of the request entity, but was unable to process the contained instructions.
  */
-export class UnprocessableEntityError extends DefaultErrorBase(HttpException) {
+export class UnprocessableEntityError extends DefaultErrorBase(
+  UnprocessableEntityException,
+) {
+  static defaultStatusCode = HttpStatus.UNPROCESSABLE_ENTITY;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(
-      ...buildArgsHttpException(
-        ErrorsEnum.UNPROCESSABLE_ENTITY,
-        internalMessage,
-        options,
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      ),
+      ...buildArgs(ErrorsEnum.UNPROCESSABLE_ENTITY, internalMessage, options),
     );
   }
 }
@@ -219,6 +219,7 @@ export class UnprocessableEntityError extends DefaultErrorBase(HttpException) {
  * Use when the user has sent too many requests in a given amount of time ("rate limiting").
  */
 export class TooManyRequestsError extends DefaultErrorBase(HttpException) {
+  static defaultStatusCode = HttpStatus.TOO_MANY_REQUESTS;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(
       ...buildArgsHttpException(
@@ -234,47 +235,35 @@ export class TooManyRequestsError extends DefaultErrorBase(HttpException) {
 /**
  * Use when the server does not support the functionality required to fulfill the request.
  */
-export class NotImplementedError extends DefaultErrorBase(HttpException) {
+export class NotImplementedError extends DefaultErrorBase(
+  NotImplementedException,
+) {
+  static defaultStatusCode = HttpStatus.NOT_IMPLEMENTED;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
-    super(
-      ...buildArgsHttpException(
-        ErrorsEnum.NOT_IMPLEMENTED,
-        internalMessage,
-        options,
-        HttpStatus.NOT_IMPLEMENTED,
-      ),
-    );
+    super(...buildArgs(ErrorsEnum.NOT_IMPLEMENTED, internalMessage, options));
   }
 }
 
 /**
  * Use when the server, while acting as a gateway or proxy, received an invalid response from the upstream server.
  */
-export class BadGatewayError extends DefaultErrorBase(HttpException) {
+export class BadGatewayError extends DefaultErrorBase(BadGatewayException) {
+  static defaultStatusCode = HttpStatus.BAD_GATEWAY;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
-    super(
-      ...buildArgsHttpException(
-        ErrorsEnum.BAD_GATEWAY,
-        internalMessage,
-        options,
-        HttpStatus.BAD_GATEWAY,
-      ),
-    );
+    super(...buildArgs(ErrorsEnum.BAD_GATEWAY, internalMessage, options));
   }
 }
 
 /**
  * Use when the server is currently unavailable (because it is overloaded or down for maintenance).
  */
-export class ServiceUnavailableError extends DefaultErrorBase(HttpException) {
+export class ServiceUnavailableError extends DefaultErrorBase(
+  ServiceUnavailableException,
+) {
+  static defaultStatusCode = HttpStatus.SERVICE_UNAVAILABLE;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(
-      ...buildArgsHttpException(
-        ErrorsEnum.SERVICE_UNAVAILABLE,
-        internalMessage,
-        options,
-        HttpStatus.SERVICE_UNAVAILABLE,
-      ),
+      ...buildArgs(ErrorsEnum.SERVICE_UNAVAILABLE, internalMessage, options),
     );
   }
 }
@@ -282,16 +271,12 @@ export class ServiceUnavailableError extends DefaultErrorBase(HttpException) {
 /**
  * Use when the server, while acting as a gateway or proxy, did not receive a timely response from the upstream server or some other auxiliary server.
  */
-export class GatewayTimeoutError extends DefaultErrorBase(HttpException) {
+export class GatewayTimeoutError extends DefaultErrorBase(
+  GatewayTimeoutException,
+) {
+  static defaultStatusCode = HttpStatus.GATEWAY_TIMEOUT;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
-    super(
-      ...buildArgsHttpException(
-        ErrorsEnum.GATEWAY_TIMEOUT,
-        internalMessage,
-        options,
-        HttpStatus.GATEWAY_TIMEOUT,
-      ),
-    );
+    super(...buildArgs(ErrorsEnum.GATEWAY_TIMEOUT, internalMessage, options));
   }
 }
 
@@ -299,22 +284,24 @@ export class GatewayTimeoutError extends DefaultErrorBase(HttpException) {
  * Custom
  */
 
-export class AdditionalVerificationNeededException extends DefaultErrorBase(
+export class AdditionalVerificationNeededError extends DefaultErrorBase(
   HttpException,
 ) {
+  static defaultStatusCode = HttpStatusCode.UnavailableForLegalReasons;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(
       ...buildArgsHttpException(
         ErrorsEnum.UNAVAILABLE_FOR_LEGAL_REASONS,
         internalMessage,
         options,
-        HttpStatusCode.UnavailableForLegalReasons,
+        AdditionalVerificationNeededError.defaultStatusCode,
       ),
     );
   }
 }
 
 export class LoginError extends DefaultErrorBase(UnauthorizedException) {
+  static defaultStatusCode = HttpStatus.UNAUTHORIZED;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(...buildArgs(ErrorsEnum.BAD_LOGIN, internalMessage, options));
   }
@@ -323,6 +310,7 @@ export class LoginError extends DefaultErrorBase(UnauthorizedException) {
 export class InputValidationError extends DefaultErrorBase(
   BadRequestException,
 ) {
+  static defaultStatusCode = HttpStatus.BAD_REQUEST;
   constructor(internalMessage?: string, options?: IDefaultErrorBaseOptions) {
     super(...buildArgs(ErrorsEnum.INVALID_VALUE, internalMessage, options));
   }

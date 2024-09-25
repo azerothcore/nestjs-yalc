@@ -25,11 +25,15 @@ describe('EventHelper', () => {
       }
     }
 
+    class NothingException {}
+
     expect(isErrorEvent({})).toBeFalsy();
     expect(isErrorEvent({ errorClass: true })).toBeTruthy();
     expect(isErrorEvent({ errorClass: DefaultError })).toBeTruthy();
     expect(isErrorEvent({ errorClass: HttpException })).toBeTruthy();
     expect(isErrorEvent({ errorClass: Error })).toBeTruthy();
+    expect(isErrorEvent({ errorClass: new Error() })).toBeTruthy();
+    expect(isErrorEvent({ errorClass: new NothingException() })).toBeFalsy();
     expect(isErrorEvent({ errorClass: CustomBadRequestException })).toBeFalsy();
     expect(
       isErrorEvent({ errorClass: CustomInternalServerErrorException }),

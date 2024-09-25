@@ -14,6 +14,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getHttpStatusNameByCode } from './error.enum.js';
 import { deepMergeWithoutArrayConcat } from '@nestjs-yalc/utils/object.helper.js';
+import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 
 export const ON_DEFAULT_ERROR_EVENT = 'onDefaultError';
 
@@ -217,12 +218,6 @@ export const newDefaultError = <
   return new (DefaultErrorMixin(base))(options, ...args);
 };
 
-export function isDefaultErrorMixin(
-  error: any,
-): error is IAbstractDefaultError {
-  return (error as any).__DefaultErrorMixin !== undefined;
-}
-
 interface IFormattedCause {
   message?: string;
   stack?: string;
@@ -255,6 +250,8 @@ export const DefaultErrorMixin = <
     extends BaseClass
     implements IAbstractDefaultError
   {
+    static defaultStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+
     data?: any;
     description?: string;
     internalMessage?: string;
@@ -499,6 +496,7 @@ export function DefaultErrorBase<
   T extends ClassType<HttpException> = ClassType<HttpException>,
 >(base?: T): IDefaultErrorBaseConstructor<T> {
   return class extends DefaultErrorMixin(base ?? HttpException) {
+    static defaultStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     constructor(
       internalMessage?: string,
       /**
@@ -517,6 +515,7 @@ export function DefaultErrorBase<
  * It extends the HttpException class and the IAbstractDefaultError interface.
  */
 export class DefaultError extends DefaultErrorBase(HttpException) {
+  static defaultStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;
   constructor(
     internalMessage?: string,
     /**
@@ -571,3 +570,18 @@ export const errorToDefaultError = (
     ...options,
   });
 };
+
+export function isDefaultErrorMixin(
+  error: any,
+): error is IAbstractDefaultError {
+  return (error as any).__DefaultErrorMixin !== undefined;
+}
+
+export function isDefaultErrorMixinClass(
+  error: any,
+): error is typeof DefaultError {
+  return (
+    isClass(error) &&
+    (error as typeof DefaultError).defaultStatusCode !== undefined
+  );
+}

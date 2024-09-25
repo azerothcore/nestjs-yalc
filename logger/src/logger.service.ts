@@ -1,4 +1,4 @@
-import { AppLoggerFactory } from '@nestjs-yalc/logger';
+import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 import { FactoryProvider, LogLevel } from '@nestjs/common';
 import type {
   IImprovedLoggerOptions,

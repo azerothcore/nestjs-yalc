@@ -1,10 +1,9 @@
-import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
 import { LogLevelEnum } from '@nestjs-yalc/logger/logger.enum.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
-import { HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { LogLevel } from 'typeorm';
 import { IErrorEventOptions } from './event.js';
-import { getStatusCodeFromError } from '@nestjs-yalc/utils/http.helper.js';
+import { getStatusCodeFromError } from '@nestjs-yalc/errors/error.helper.js';
 
 export function getLogLevelByStatus(statusCode: number) {
   let loggerLevel: LogLevel;
@@ -22,6 +21,30 @@ export function getLogLevelByStatus(statusCode: number) {
   }
 
   return loggerLevel;
+}
+
+export function getLogLevelByError(error: any) {
+  const statusCode = getStatusCodeFromError(error);
+  if (statusCode) {
+    return getLogLevelByStatus(statusCode);
+  }
+
+  /**
+   * This is a fallback to handle edge cases but it's slower since
+   * it creates an instance of the error class and should not happen
+   */
+  let _error: Error;
+  if (isClass(error)) {
+    _error = new error() as any;
+  } else {
+    _error = error;
+  }
+
+  const httpException = _error as HttpException;
+  if (httpException.getStatus)
+    return getLogLevelByStatus(httpException.getStatus());
+
+  return _error.stack ? LogLevelEnum.ERROR : LogLevelEnum.LOG;
 }
 
 /**
@@ -43,28 +66,6 @@ export function isErrorEvent(options: IErrorEventOptions) {
     return true;
   }
 
-  if (isClass(options.errorClass, DefaultError.name)) {
-    return true;
-  }
-
-  const statusCode = getStatusCodeFromError(options.errorClass);
-  if (statusCode) {
-    return getLogLevelByStatus(statusCode) === LogLevelEnum.ERROR;
-  }
-
-  /**
-   * This is a fallback to handle edge cases but it's slower since
-   * it creates an instance of the error class and should not happen
-   */
-  let error;
-  if (isClass(options.errorClass)) {
-    error = new options.errorClass();
-  } else {
-    error = options.errorClass;
-  }
-
-  return (
-    !error.getStatus ||
-    getLogLevelByStatus(error.getStatus()) === LogLevelEnum.ERROR
-  );
+  const logLevel = getLogLevelByError(options.errorClass);
+  return logLevel === LogLevelEnum.ERROR;
 }

@@ -7,10 +7,16 @@ import {
   isDefaultErrorMixin,
   DefaultErrorBase,
   errorToDefaultError,
+  isDefaultErrorMixinClass,
 } from '../default.error.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import EventEmitter from 'events';
-import { ForbiddenException, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { getHttpStatusDescription } from '@nestjs-yalc/utils/http.helper.js';
 
 describe('DefaultErrorMixin', () => {
@@ -245,6 +251,18 @@ describe('DefaultError', () => {
     it('should check if an error is of DefaultMixin type', () => {
       const error = new DefaultError();
       const check = isDefaultErrorMixin(error);
+      expect(check).toBeTruthy();
+    });
+  });
+
+  describe('isDefaultErrorMixinClass', () => {
+    it('should check if an error is not of DefaultMixin type', () => {
+      const check = isDefaultErrorMixinClass(BadRequestException);
+      expect(check).toBeFalsy();
+    });
+
+    it('should check if an error is of DefaultMixin type', () => {
+      const check = isDefaultErrorMixinClass(DefaultError);
       expect(check).toBeTruthy();
     });
   });

@@ -1,12 +1,5 @@
-import { isClass } from '../class.helper.js';
-import {
-  describe,
-  expect,
-  it,
-  jest,
-  beforeAll,
-  beforeEach,
-} from '@jest/globals';
+import { isClass, isES6Class } from '../class.helper.js';
+import { describe, expect, it } from '@jest/globals';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
 
 describe('Test Class Helpers', () => {
@@ -19,7 +12,10 @@ describe('Test Class Helpers', () => {
       isClass(function (nothing: any) {
         nothing;
       }),
-    ).toBeFalsy();
+    ).toBeTruthy();
+    expect(isClass(Error)).toBeTruthy();
+    expect(isES6Class(Error)).toBeFalsy();
+    expect(isClass(() => {})).toBeFalsy();
   });
 
   it('expect an instance of a class to not be a class', () => {

@@ -4,25 +4,19 @@ import {
   describe,
   it,
   beforeEach,
-  beforeAll,
-  afterAll,
   afterEach,
 } from '@jest/globals';
 
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { DynamicModule, INestApplicationContext, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import {
-  curriedExecuteStandaloneFunction,
-  executeStandaloneFunction,
-} from '../app.helper.js';
+import { executeStandaloneFunction } from '../app.helper.js';
 import {
   getBootstrappedApps,
   getMainBootstrappedApp,
 } from '../app-bootstrap-base.helper.js';
 import { AppBootstrap } from '../app-bootstrap.helper.js';
 import { yalcBaseAppModuleMetadataFactory } from '../base-app-module.helper.js';
-import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
 
 @Module(
   yalcBaseAppModuleMetadataFactory(TestModule1, 'test1', {

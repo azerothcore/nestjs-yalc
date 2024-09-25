@@ -1,4 +1,3 @@
-import { ClassType } from '@nestjs-yalc/types/globals.js';
 import {
   BadGatewayException,
   BadRequestException,
@@ -23,7 +22,6 @@ import {
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { HttpStatusCode } from 'axios';
-import { isClass } from './class.helper.js';
 
 export const HttpStatusCodes = {
   ...HttpStatus,
@@ -129,7 +127,7 @@ export const getHttpStatusDescription = (
   return httpStatusDescriptions[status] ?? fallbackDescription;
 };
 
-const httpExceptionStatusCodes = {
+export const httpExceptionStatusCodes = {
   [BadRequestException.name]: HttpStatus.BAD_REQUEST,
   [UnauthorizedException.name]: HttpStatus.UNAUTHORIZED,
   [ForbiddenException.name]: HttpStatus.FORBIDDEN,
@@ -151,16 +149,3 @@ const httpExceptionStatusCodes = {
   [HttpException.name]: HttpStatus.INTERNAL_SERVER_ERROR,
   [MisdirectedException.name]: HttpStatus.MISDIRECTED,
 };
-
-/**
- * Function to convert all HttpException based errors classes to their corresponding status code
- * using a predefined list of status codes
- */
-export function getStatusCodeFromError(error: ClassType<any> | any) {
-  if (!isClass(error) && error.getStatus) {
-    return error.getStatus();
-  }
-
-  const errorName = error.name;
-  return httpExceptionStatusCodes[errorName] || null;
-}
