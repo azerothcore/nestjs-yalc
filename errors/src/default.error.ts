@@ -368,40 +368,47 @@ export const DefaultErrorMixin = <
         cause?: Error;
       },
     ) {
-      if (info.internalMessage) this.internalMessage = info.internalMessage;
-      if (info.description) this.description = info.description;
-      if (info.eventName) this.eventName = info.eventName;
+      const {
+        internalMessage,
+        description,
+        eventName,
+        data,
+        stack,
+        cause,
+        response,
+        ...rest
+      } = info;
 
-      if (info.data)
-        this.data = deepMergeWithoutArrayConcat(this.data ?? {}, info.data);
+      if (internalMessage) this.internalMessage = internalMessage;
+      if (description) this.description = description;
+      if (eventName) this.eventName = eventName;
 
-      if (info.stack) this.resolvedStack = info.stack;
+      if (data) this.data = deepMergeWithoutArrayConcat(this.data ?? {}, data);
 
-      if (info.cause) {
-        this.cause = info.cause;
-        this.eventPayload.cause = formatCause(info.cause);
+      if (stack) this.resolvedStack = stack;
+
+      if (cause) {
+        this.cause = cause;
+        this.eventPayload.cause = formatCause(cause);
       }
 
-      if (info.response) {
+      if (response) {
         this.betterResponse = {
           ...this.betterResponse!,
           ..._AbstractDefaultError.buildResponse(
             this.message,
             this.description!,
             this.getStatus(),
-            info.response,
+            response,
           ),
         };
 
         this.message = this.betterResponse.message;
       }
 
-      if (info.config) {
-        this.eventPayload.config = info.config;
-      }
-
       this.eventPayload = {
         ...this.eventPayload,
+        ...rest,
         data: this.data,
         eventName: this.eventName,
         description: this.description,
