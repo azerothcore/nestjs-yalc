@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { getLogLevelByStatus, isErrorEvent } from '../event.helper.js';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
+import { LogLevelEnum } from '@nestjs-yalc/logger/logger.enum.js';
 
 describe('EventHelper', () => {
   it('should return the correct log level', () => {
@@ -21,5 +22,11 @@ describe('EventHelper', () => {
         errorClass: new HttpException('test', HttpStatus.BAD_REQUEST),
       }),
     ).toBeFalsy();
+    expect(
+      isErrorEvent({
+        errorClass: HttpException,
+        logger: { level: LogLevelEnum.ERROR },
+      }),
+    ).toBeTruthy();
   });
 });
