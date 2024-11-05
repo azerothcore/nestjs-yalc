@@ -47,6 +47,11 @@ export interface IEventPayload {
    */
   data?: IDataInfo;
   eventName: string;
+  config?: any;
+  /**
+   * This is used to log the error information.
+   * NOTE: eventName and config are redundant here.
+   */
   errorInfo?: IErrorPayload;
 }
 
@@ -299,6 +304,7 @@ export function event<
       message: optionalMessage,
       data,
       eventName: formattedEventName,
+      config,
       errorInfo: !_.isEmpty(errorPayload) ? errorPayload : undefined,
     };
 
