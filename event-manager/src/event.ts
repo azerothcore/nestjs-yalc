@@ -48,6 +48,7 @@ export interface IEventPayload {
   data?: IDataInfo;
   eventName: string;
   config?: any;
+  level?: LogLevel;
   /**
    * This is used to log the error information.
    * NOTE: eventName and config are redundant here.
@@ -253,6 +254,7 @@ export function event<
    *
    * We build the logger function here unless the logger is false
    */
+  let logLevel: LogLevel | undefined = undefined;
   if (logger !== false) {
     const {
       instance: _instance,
@@ -267,6 +269,8 @@ export function event<
       level: _level ?? 'log',
       ...rest,
     };
+
+    logLevel = level;
 
     const message = optionalMessage ?? formattedEventName;
 
@@ -305,6 +309,7 @@ export function event<
       data,
       eventName: formattedEventName,
       config,
+      level: logLevel,
       errorInfo: !_.isEmpty(errorPayload) ? errorPayload : undefined,
     };
 
