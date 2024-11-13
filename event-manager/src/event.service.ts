@@ -157,7 +157,7 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: IErrorBasedMethodOptions<TErrorOptions>,
   ) {
-    return this._error(eventName, options);
+    return this._error(eventName, this.buildErrorOptions(options));
   }
 
   @InjectTrace()
@@ -165,7 +165,7 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: IErrorBasedMethodOptions<TErrorOptions>,
   ) {
-    return this._errorAsync(eventName, options);
+    return this._errorAsync(eventName, this.buildErrorOptions(options));
   }
 
   public async warnAsync(
