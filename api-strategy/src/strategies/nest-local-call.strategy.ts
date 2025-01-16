@@ -70,7 +70,14 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
 
     let data;
     try {
-      data = result.json();
+      if (
+        this.options.shouldSkipJsonParse &&
+        this.options.shouldSkipJsonParse(result.body)
+      ) {
+        data = result.body;
+      } else {
+        data = result.json();
+      }
     } catch (_e) {
       //The content-type of the response is not application/json
       // if so, we use the body instead
