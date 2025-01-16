@@ -4,6 +4,7 @@ import { IApiCallStrategy } from '../context-call.interface.js';
 
 export interface IHttpCallStrategyOptions {
   headersWhitelist?: string[];
+  shouldSkipJsonParse?: (body: string) => boolean;
 }
 
 /**
