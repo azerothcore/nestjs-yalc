@@ -91,6 +91,34 @@ describe('NestLocalCallStrategy', () => {
     expect(result).toBeDefined();
   });
 
+  it('should skip parsing json if json parse throws an error', async () => {
+    adapterHost = createMock<HttpAdapterHost>({
+      httpAdapter: {
+        getInstance: () =>
+          createMock<FastifyAdapter>({
+            inject: (
+              _opts: string | InjectOptions,
+            ): PartialFuncReturn<Promise<any>> =>
+              ({
+                body: '{',
+                json: () => {
+                  throw new Error('test');
+                },
+              } as any),
+          }),
+      },
+    });
+
+    const instance = new NestLocalCallStrategy(adapterHost, clsService);
+    expect(instance).toBeDefined();
+
+    const result = await instance.call('http://localhost:3000', {
+      method: 'GET',
+    });
+
+    expect(result.data).toEqual('{');
+  });
+
   it('should skip parsing json if shouldSkipJsonParse is true', async () => {
     const instance = new NestLocalCallStrategy(
       adapterHost,
